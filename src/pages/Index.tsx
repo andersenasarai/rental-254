@@ -110,7 +110,7 @@ const Index = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full" size="lg">
+                  <Button className="w-full" size="lg" onClick={() => window.location.href = '/auth'}>
                     Access Landlord Dashboard
                   </Button>
                 </CardContent>
@@ -130,7 +130,7 @@ const Index = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full" size="lg" variant="outline">
+                  <Button className="w-full" size="lg" variant="outline" onClick={() => window.location.href = '/auth'}>
                     Access Tenant Portal
                   </Button>
                 </CardContent>
