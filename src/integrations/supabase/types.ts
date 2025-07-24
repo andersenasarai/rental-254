@@ -14,7 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          role: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tenants: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          lease_end_date: string | null
+          lease_start_date: string | null
+          monthly_rent: number | null
+          notes: string | null
+          phone: string | null
+          property_address: string | null
+          security_deposit: number | null
+          status: string | null
+          unit_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          last_name: string
+          lease_end_date?: string | null
+          lease_start_date?: string | null
+          monthly_rent?: number | null
+          notes?: string | null
+          phone?: string | null
+          property_address?: string | null
+          security_deposit?: number | null
+          status?: string | null
+          unit_number?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          lease_end_date?: string | null
+          lease_start_date?: string | null
+          monthly_rent?: number | null
+          notes?: string | null
+          phone?: string | null
+          property_address?: string | null
+          security_deposit?: number | null
+          status?: string | null
+          unit_number?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
