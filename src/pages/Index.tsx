@@ -31,27 +31,30 @@ const Index = () => {
     }
   ];
 
-  const pricingPlans = [
+  const benefits = [
     {
-      name: "Starter",
-      price: "Free",
-      description: "Perfect for small landlords",
-      features: ["Up to 5 properties", "Basic payment tracking", "Maintenance requests", "Email support"],
-      popular: false
+      title: "Save Time & Money",
+      description: "Automate routine tasks and reduce administrative overhead by up to 70%",
+      icon: DollarSign,
+      stats: "70% time saved"
     },
     {
-      name: "Professional",
-      price: "$29/month",
-      description: "Best for growing portfolios",
-      features: ["Unlimited properties", "Advanced reporting", "SMS notifications", "Priority support", "QuickBooks integration"],
-      popular: true
+      title: "Improve Tenant Satisfaction",
+      description: "Provide tenants with 24/7 access to submit requests and make payments online",
+      icon: Users,
+      stats: "95% tenant satisfaction"
     },
     {
-      name: "Enterprise",
-      price: "$99/month", 
-      description: "For large property managers",
-      features: ["Everything in Professional", "Custom branding", "API access", "Dedicated support", "Advanced analytics"],
-      popular: false
+      title: "Centralized Management",
+      description: "Manage all properties, tenants, and finances from one secure dashboard",
+      icon: Building2,
+      stats: "All-in-one platform"
+    },
+    {
+      title: "Professional Organization",
+      description: "Keep detailed records, track maintenance history, and generate reports instantly",
+      icon: Wrench,
+      stats: "100% organized"
     }
   ];
 
@@ -167,47 +170,38 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* Benefits Section */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-foreground mb-4">
-              Simple, Transparent Pricing
+              Why Choose HomeLend?
             </h2>
             <p className="text-xl text-muted-foreground">
-              Choose the plan that works best for your portfolio size
+              Transform your property management with proven results
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {pricingPlans.map((plan, index) => (
-              <Card key={index} className={`relative ${plan.popular ? "ring-2 ring-primary" : ""}`}>
-                {plan.popular && (
-                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">
-                    Most Popular
-                  </Badge>
-                )}
-                <CardHeader className="text-center">
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                  <div className="text-4xl font-bold text-primary mb-2">{plan.price}</div>
-                  <CardDescription>{plan.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3 mb-6">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center">
-                        <Check className="h-4 w-4 text-success mr-2" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button 
-                    className="w-full" 
-                    variant={plan.popular ? "default" : "outline"}
-                    size="lg"
-                  >
-                    Get Started
-                  </Button>
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {benefits.map((benefit, index) => (
+              <Card key={index} className="p-6">
+                <CardContent className="pt-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                      <benefit.icon className="h-8 w-8 text-primary" />
+                    </div>
+                    <div className="flex-grow">
+                      <h3 className="text-xl font-semibold text-foreground mb-2">
+                        {benefit.title}
+                      </h3>
+                      <p className="text-muted-foreground mb-3">
+                        {benefit.description}
+                      </p>
+                      <Badge variant="secondary" className="text-xs">
+                        {benefit.stats}
+                      </Badge>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             ))}
