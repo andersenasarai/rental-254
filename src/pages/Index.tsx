@@ -70,8 +70,8 @@ const Index = () => {
           <div className="flex items-center space-x-4">
             <Button variant="ghost">Features</Button>
             <Button variant="ghost">Pricing</Button>
-            <Button variant="outline">Sign In</Button>
-            <Button>Get Started</Button>
+            <Button variant="outline" onClick={() => window.location.href = '/auth'}>Sign In</Button>
+            <Button onClick={() => window.location.href = '/auth'}>Get Started</Button>
           </div>
         </div>
       </header>
@@ -219,7 +219,7 @@ const Index = () => {
             Join thousands of landlords who have simplified their rental business with HomeLend
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary">
+            <Button size="lg" variant="secondary" onClick={() => window.location.href = '/auth'}>
               Start Free Trial
             </Button>
             <Button size="lg" variant="outline" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
