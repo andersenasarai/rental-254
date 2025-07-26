@@ -4,20 +4,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, DollarSign, Home, Wrench, Calendar } from 'lucide-react';
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
   ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
   BarChart,
   Bar,
-  LineChart,
-  Line
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip
 } from 'recharts';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -357,7 +353,7 @@ export default function FinancialDashboard() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={financialData.monthlyData}>
+              <BarChart data={financialData.monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis tickFormatter={(value) => `$${value.toLocaleString()}`} />
@@ -365,10 +361,9 @@ export default function FinancialDashboard() {
                   formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
                   labelFormatter={(label) => `Month: ${label}`}
                 />
-                <Area type="monotone" dataKey="income" stackId="1" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} />
-                <Area type="monotone" dataKey="expenditure" stackId="2" stroke="#ef4444" fill="#ef4444" fillOpacity={0.3} />
-                <Line type="monotone" dataKey="profit" stroke="#10b981" strokeWidth={3} dot={{ fill: '#10b981' }} />
-              </AreaChart>
+                <Bar dataKey="income" fill="hsl(var(--primary))" />
+                <Bar dataKey="expenditure" fill="#ef4444" />
+              </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>

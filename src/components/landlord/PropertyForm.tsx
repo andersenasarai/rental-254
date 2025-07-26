@@ -50,13 +50,13 @@ export function PropertyForm({ property, onClose, onSave }: PropertyFormProps) {
         city: property.city || "",
         state: property.state || "",
         zip_code: property.zip_code || "",
-        rent_amount: property.rent_amount?.toString() || "",
-        deposit_amount: property.deposit_amount?.toString() || "",
+        rent_amount: property.monthly_rent?.toString() || "",
+        deposit_amount: "", // Not in schema
         bedrooms: property.bedrooms?.toString() || "",
         bathrooms: property.bathrooms?.toString() || "",
         square_feet: property.square_feet?.toString() || "",
-        amenities: property.amenities || [],
-        status: property.status || "available",
+        amenities: [], // Not in schema
+        status: property.status as "available" | "occupied" | "maintenance" || "available",
       });
     }
   }, [property]);
@@ -69,19 +69,18 @@ export function PropertyForm({ property, onClose, onSave }: PropertyFormProps) {
 
     try {
       const propertyData: PropertyInsert = {
-        landlord_id: user.id,
+        user_id: user.id,
         title: formData.title,
         description: formData.description || null,
         address: formData.address,
         city: formData.city,
         state: formData.state,
         zip_code: formData.zip_code,
-        rent_amount: parseFloat(formData.rent_amount),
-        deposit_amount: formData.deposit_amount ? parseFloat(formData.deposit_amount) : null,
+        monthly_rent: parseFloat(formData.rent_amount),
         bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
         bathrooms: formData.bathrooms ? parseFloat(formData.bathrooms) : null,
         square_feet: formData.square_feet ? parseInt(formData.square_feet) : null,
-        amenities: formData.amenities.length > 0 ? formData.amenities : null,
+        property_type: 'apartment',
         status: formData.status,
       };
 
