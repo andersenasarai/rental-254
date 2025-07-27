@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      house_inventory: {
+        Row: {
+          condition: string
+          created_at: string
+          current_condition: string
+          description: string | null
+          id: string
+          item_category: string
+          item_name: string
+          location_in_house: string | null
+          move_in_condition: string
+          property_id: string
+          updated_at: string
+        }
+        Insert: {
+          condition: string
+          created_at?: string
+          current_condition: string
+          description?: string | null
+          id?: string
+          item_category: string
+          item_name: string
+          location_in_house?: string | null
+          move_in_condition: string
+          property_id: string
+          updated_at?: string
+        }
+        Update: {
+          condition?: string
+          created_at?: string
+          current_condition?: string
+          description?: string | null
+          id?: string
+          item_category?: string
+          item_name?: string
+          location_in_house?: string | null
+          move_in_condition?: string
+          property_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       leases: {
         Row: {
           created_at: string
@@ -253,6 +295,81 @@ export type Database = {
           updated_at?: string
           user_id?: string
           zip_code?: string
+        }
+        Relationships: []
+      }
+      tenant_bills: {
+        Row: {
+          amount: number
+          bill_type: string
+          created_at: string
+          due_date: string
+          id: string
+          notes: string | null
+          paid_date: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          bill_type: string
+          created_at?: string
+          due_date: string
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          bill_type?: string
+          created_at?: string
+          due_date?: string
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tenant_move_in_reports: {
+        Row: {
+          created_at: string
+          id: string
+          landlord_signature: boolean | null
+          move_in_date: string
+          overall_condition_notes: string | null
+          property_id: string
+          tenant_id: string
+          tenant_signature: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          landlord_signature?: boolean | null
+          move_in_date: string
+          overall_condition_notes?: string | null
+          property_id: string
+          tenant_id: string
+          tenant_signature?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          landlord_signature?: boolean | null
+          move_in_date?: string
+          overall_condition_notes?: string | null
+          property_id?: string
+          tenant_id?: string
+          tenant_signature?: boolean | null
+          updated_at?: string
         }
         Relationships: []
       }

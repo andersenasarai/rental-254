@@ -8,6 +8,7 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import LandlordDashboard from "./pages/landlord/LandlordDashboard";
+import TenantDashboard from "./pages/tenant/TenantDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <LandlordDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/tenant/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <TenantDashboard />
                 </ProtectedRoute>
               } 
             />
