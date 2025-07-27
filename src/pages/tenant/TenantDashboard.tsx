@@ -3,10 +3,12 @@ import { RentCountdown } from "@/components/tenant/RentCountdown";
 import { BillsOverview } from "@/components/tenant/BillsOverview";
 import { HouseInventory } from "@/components/tenant/HouseInventory";
 import { TenancyReport } from "@/components/tenant/TenancyReport";
+import { DashboardHeader } from "@/components/DashboardHeader";
 
 const TenantDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+      <DashboardHeader title="Tenant Dashboard" userType="tenant" />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">

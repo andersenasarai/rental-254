@@ -16,17 +16,27 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
-  // Redirect if already logged in
-  if (user) {
-    navigate('/landlord/dashboard');
+  // Redirect if already logged in based on role
+  if (user && profile) {
+    const redirectPath = profile.role === 'tenant' ? '/tenant/dashboard' : '/landlord/dashboard';
+    navigate(redirectPath);
     return null;
   }
 
   const handleLogin = async (email: string, password: string) => {
     try {
       setIsLoading(true);
+      
+      // Clean up existing state before login
+      localStorage.removeItem('supabase.auth.token');
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          localStorage.removeItem(key);
+        }
+      });
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -46,7 +56,16 @@ export function LoginForm() {
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
-        navigate('/landlord/dashboard');
+        
+        // Get user profile to determine redirect
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', data.user.id)
+          .single();
+        
+        const redirectPath = profileData?.role === 'tenant' ? '/tenant/dashboard' : '/landlord/dashboard';
+        window.location.href = redirectPath;
       }
     } catch (error) {
       toast({
@@ -62,6 +81,15 @@ export function LoginForm() {
   const handleSignUp = async (email: string, password: string, fullName: string, role: string) => {
     try {
       setIsLoading(true);
+      
+      // Clean up existing state before signup
+      localStorage.removeItem('supabase.auth.token');
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          localStorage.removeItem(key);
+        }
+      });
+
       const redirectUrl = `${window.location.origin}/`;
       
       const { data, error } = await supabase.auth.signUp({
@@ -88,8 +116,14 @@ export function LoginForm() {
       if (data.user) {
         toast({
           title: "Account Created!",
-          description: "Please check your email to confirm your account.",
+          description: "Please check your email to confirm your account, or if email confirmation is disabled, you can now sign in.",
         });
+        
+        // If user is immediately confirmed (no email confirmation), redirect
+        if (data.user.email_confirmed_at) {
+          const redirectPath = role === 'tenant' ? '/tenant/dashboard' : '/landlord/dashboard';
+          window.location.href = redirectPath;
+        }
       }
     } catch (error) {
       toast({
