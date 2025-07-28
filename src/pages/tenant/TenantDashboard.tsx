@@ -1,8 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RentCountdown } from "@/components/tenant/RentCountdown";
-import { BillsOverview } from "@/components/tenant/BillsOverview";
-import { HouseInventory } from "@/components/tenant/HouseInventory";
-import { TenancyReport } from "@/components/tenant/TenancyReport";
+import { PaymentHistory } from "@/components/tenant/PaymentHistory";
+import { MaintenanceRequests } from "@/components/tenant/MaintenanceRequests";
+import { TenantPersonalInfo } from "@/components/tenant/TenantPersonalInfo";
 import { DashboardHeader } from "@/components/DashboardHeader";
 
 const TenantDashboard = () => {
@@ -24,23 +24,23 @@ const TenantDashboard = () => {
           <RentCountdown />
         </div>
 
-        <Tabs defaultValue="bills" className="space-y-6">
+        <Tabs defaultValue="payments" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="bills">Bills & Expenses</TabsTrigger>
-            <TabsTrigger value="inventory">House Inventory</TabsTrigger>
-            <TabsTrigger value="tenancy">Tenancy Report</TabsTrigger>
+            <TabsTrigger value="payments">Payment History</TabsTrigger>
+            <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
+            <TabsTrigger value="profile">Personal Info</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="bills" className="space-y-6">
-            <BillsOverview />
+          <TabsContent value="payments" className="space-y-6">
+            <PaymentHistory />
           </TabsContent>
 
-          <TabsContent value="inventory" className="space-y-6">
-            <HouseInventory />
+          <TabsContent value="maintenance" className="space-y-6">
+            <MaintenanceRequests />
           </TabsContent>
 
-          <TabsContent value="tenancy" className="space-y-6">
-            <TenancyReport />
+          <TabsContent value="profile" className="space-y-6">
+            <TenantPersonalInfo />
           </TabsContent>
         </Tabs>
       </div>

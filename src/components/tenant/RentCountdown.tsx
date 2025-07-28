@@ -60,14 +60,12 @@ export const RentCountdown = () => {
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();
       
-      // Rent is typically due on the 1st of each month
-      let nextRentDate = new Date(currentYear, currentMonth + 1, 1);
+      // Rent is due on the 10th of each month
+      let nextRentDate = new Date(currentYear, currentMonth, 10);
       
-      // If it's already past the 1st of current month, next rent is next month
-      if (now.getDate() > 1) {
-        nextRentDate = new Date(currentYear, currentMonth + 1, 1);
-      } else {
-        nextRentDate = new Date(currentYear, currentMonth, 1);
+      // If it's already past the 10th of current month, next rent is next month
+      if (now.getDate() >= 10) {
+        nextRentDate = new Date(currentYear, currentMonth + 1, 10);
       }
 
       const timeLeft = nextRentDate.getTime() - now.getTime();
