@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building2, Users, DollarSign, Wrench } from 'lucide-react';
 import FinancialDashboard from './FinancialDashboard';
+import TenantManagement from './TenantManagement';
 
 export default function SimpleDashboard() {
   return (
@@ -61,13 +62,18 @@ export default function SimpleDashboard() {
 
       {/* Main Tabs */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Financial Overview</TabsTrigger>
+          <TabsTrigger value="tenants">Tenant Management</TabsTrigger>
           <TabsTrigger value="coming-soon">More Features</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
           <FinancialDashboard />
+        </TabsContent>
+
+        <TabsContent value="tenants">
+          <TenantManagement />
         </TabsContent>
 
         <TabsContent value="coming-soon">
