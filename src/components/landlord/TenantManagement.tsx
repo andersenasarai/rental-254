@@ -4,10 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { User, Calendar, FileText, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { User, Calendar, FileText, AlertCircle, CheckCircle, Clock, Plus, Upload, Trash2, Bell } from 'lucide-react';
 import { format } from 'date-fns';
+import AddTenantForm from './AddTenantForm';
+import ExcelImport from './ExcelImport';
+import MoveOutNotices from './MoveOutNotices';
 
 interface Tenant {
   id: string;
@@ -43,11 +49,14 @@ interface MaintenanceRequest {
 
 export default function TenantManagement() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [tenantPayments, setTenantPayments] = useState<Payment[]>([]);
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [addTenantOpen, setAddTenantOpen] = useState(false);
+  const [excelImportOpen, setExcelImportOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -97,6 +106,30 @@ export default function TenantManagement() {
     }
   };
 
+  const deleteTenant = async (tenantId: string) => {
+    try {
+      const { error } = await supabase
+        .from('tenants')
+        .delete()
+        .eq('id', tenantId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Tenant deleted successfully!",
+      });
+
+      fetchTenants();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete tenant",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getPaymentStatus = (tenant: Tenant) => {
     // This would ideally check recent payments
     // For now, returning a placeholder status
@@ -139,12 +172,31 @@ export default function TenantManagement() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Tenant Management</h2>
-        <p className="text-muted-foreground">Manage your tenants and track their status</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Tenant Management</h2>
+          <p className="text-muted-foreground">Manage your tenants and track their status</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setExcelImportOpen(true)}>
+            <Upload className="w-4 h-4 mr-2" />
+            Import Excel
+          </Button>
+          <Button onClick={() => setAddTenantOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Tenant
+          </Button>
+        </div>
       </div>
 
-      <Card>
+      <Tabs defaultValue="tenants" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="tenants">Tenants</TabsTrigger>
+          <TabsTrigger value="notices">Move-Out Notices</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="tenants">
+          <Card>
         <CardHeader>
           <CardTitle>All Tenants</CardTitle>
           <CardDescription>
@@ -202,19 +254,20 @@ export default function TenantManagement() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => {
-                              setSelectedTenant(tenant);
-                              fetchTenantDetails(tenant.id);
-                            }}
-                          >
-                            View Details
-                          </Button>
-                        </DialogTrigger>
+                      <div className="flex gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                setSelectedTenant(tenant);
+                                fetchTenantDetails(tenant.id);
+                              }}
+                            >
+                              View Details
+                            </Button>
+                          </DialogTrigger>
                         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle>
@@ -354,7 +407,34 @@ export default function TenantManagement() {
                             </div>
                           )}
                         </DialogContent>
-                      </Dialog>
+                        </Dialog>
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Tenant</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete {tenant.first_name} {tenant.last_name}? 
+                                This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteTenant(tenant.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -363,6 +443,24 @@ export default function TenantManagement() {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="notices">
+          <MoveOutNotices />
+        </TabsContent>
+      </Tabs>
+
+      <AddTenantForm 
+        open={addTenantOpen} 
+        onOpenChange={setAddTenantOpen} 
+        onTenantAdded={fetchTenants} 
+      />
+      
+      <ExcelImport 
+        open={excelImportOpen} 
+        onOpenChange={setExcelImportOpen} 
+        onImportComplete={fetchTenants} 
+      />
     </div>
   );
 }

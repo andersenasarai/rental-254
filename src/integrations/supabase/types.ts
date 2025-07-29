@@ -167,6 +167,42 @@ export type Database = {
           },
         ]
       }
+      move_out_notices: {
+        Row: {
+          created_at: string
+          id: string
+          move_out_date: string
+          notice_date: string
+          property_id: string
+          reason: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          move_out_date: string
+          notice_date?: string
+          property_id: string
+          reason?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          move_out_date?: string
+          notice_date?: string
+          property_id?: string
+          reason?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
