@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,11 +19,12 @@ export function LoginForm() {
   const { user, profile } = useAuth();
 
   // Redirect if already logged in based on role
-  if (user && profile) {
-    const redirectPath = profile.role === 'tenant' ? '/tenant/dashboard' : '/landlord/dashboard';
-    navigate(redirectPath);
-    return null;
-  }
+  useEffect(() => {
+    if (user && profile) {
+      const redirectPath = profile.role === 'tenant' ? '/tenant/dashboard' : '/landlord/dashboard';
+      navigate(redirectPath);
+    }
+  }, [user, profile, navigate]);
 
   const handleLogin = async (email: string, password: string) => {
     try {
