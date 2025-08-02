@@ -1,6 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RentCountdown } from "@/components/tenant/RentCountdown";
 import { PaymentHistory } from "@/components/tenant/PaymentHistory";
+import { PaymentSubmission } from "@/components/tenant/PaymentSubmission";
 import { MaintenanceRequests } from "@/components/tenant/MaintenanceRequests";
 import { TenantPersonalInfo } from "@/components/tenant/TenantPersonalInfo";
 import MoveOutNotice from "@/components/tenant/MoveOutNotice";
@@ -27,13 +28,14 @@ const TenantDashboard = () => {
 
         <Tabs defaultValue="payments" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="payments">Payment History</TabsTrigger>
+            <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
             <TabsTrigger value="profile">Personal Info</TabsTrigger>
             <TabsTrigger value="notices">Move-Out</TabsTrigger>
           </TabsList>
 
           <TabsContent value="payments" className="space-y-6">
+            <PaymentSubmission />
             <PaymentHistory />
           </TabsContent>
 
