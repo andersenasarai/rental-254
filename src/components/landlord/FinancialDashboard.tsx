@@ -356,9 +356,9 @@ export default function FinancialDashboard() {
               <BarChart data={financialData.monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
-                <YAxis tickFormatter={(value) => `$${value.toLocaleString()}`} />
+                <YAxis tickFormatter={(value) => `KSh ${value.toLocaleString()}`} />
                 <Tooltip 
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                  formatter={(value: number) => [`KSh ${value.toLocaleString()}`, '']}
                   labelFormatter={(label) => `Month: ${label}`}
                 />
                 <Bar dataKey="income" fill="hsl(var(--primary))" />
@@ -390,7 +390,7 @@ export default function FinancialDashboard() {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Income']} />
+                <Tooltip formatter={(value: number) => [`KSh ${value.toLocaleString()}`, 'Income']} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -407,8 +407,8 @@ export default function FinancialDashboard() {
               <BarChart data={financialData.expenditureCategories}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="category" angle={-45} textAnchor="end" height={60} />
-                <YAxis tickFormatter={(value) => `$${value.toLocaleString()}`} />
-                <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Amount']} />
+                <YAxis tickFormatter={(value) => `KSh ${value.toLocaleString()}`} />
+                <Tooltip formatter={(value: number) => [`KSh ${value.toLocaleString()}`, 'Amount']} />
                 <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

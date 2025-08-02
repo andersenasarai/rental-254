@@ -1,9 +1,11 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Users, DollarSign, Wrench } from 'lucide-react';
+import { Building2, Users, DollarSign, Wrench, Bell, CreditCard } from 'lucide-react';
 import FinancialDashboard from './FinancialDashboard';
 import TenantManagement from './TenantManagement';
+import MoveOutNotices from './MoveOutNotices';
+import PaymentConfirmation from './PaymentConfirmation';
 
 export default function SimpleDashboard() {
   return (
@@ -43,7 +45,7 @@ export default function SimpleDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$0</div>
+            <div className="text-2xl font-bold">KSh 0</div>
             <p className="text-xs text-muted-foreground">Monthly income</p>
           </CardContent>
         </Card>
@@ -62,9 +64,11 @@ export default function SimpleDashboard() {
 
       {/* Main Tabs */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Financial Overview</TabsTrigger>
           <TabsTrigger value="tenants">Tenant Management</TabsTrigger>
+          <TabsTrigger value="notices">Move-Out Notices</TabsTrigger>
+          <TabsTrigger value="payments">Payment Confirmation</TabsTrigger>
           <TabsTrigger value="coming-soon">More Features</TabsTrigger>
         </TabsList>
 
@@ -74,6 +78,14 @@ export default function SimpleDashboard() {
 
         <TabsContent value="tenants">
           <TenantManagement />
+        </TabsContent>
+
+        <TabsContent value="notices">
+          <MoveOutNotices />
+        </TabsContent>
+
+        <TabsContent value="payments">
+          <PaymentConfirmation />
         </TabsContent>
 
         <TabsContent value="coming-soon">

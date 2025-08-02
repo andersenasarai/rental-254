@@ -352,7 +352,7 @@ export default function TenantManagement() {
                                             <TableCell>
                                               {format(new Date(payment.due_date), 'MMM dd, yyyy')}
                                             </TableCell>
-                                            <TableCell>${payment.amount}</TableCell>
+                                            <TableCell>KSh {payment.amount}</TableCell>
                                             <TableCell>{getStatusBadge(payment.status)}</TableCell>
                                             <TableCell>
                                               {payment.paid_date ? 

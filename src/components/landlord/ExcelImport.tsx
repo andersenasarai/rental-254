@@ -193,7 +193,7 @@ export default function ExcelImport({ open, onOpenChange, onImportComplete }: Ex
                         <TableCell>{tenant.phone || '-'}</TableCell>
                         <TableCell>{tenant.property_address || '-'}</TableCell>
                         <TableCell>{tenant.unit_number || '-'}</TableCell>
-                        <TableCell>{tenant.monthly_rent ? `$${tenant.monthly_rent}` : '-'}</TableCell>
+                        <TableCell>{tenant.monthly_rent ? `KSh ${tenant.monthly_rent}` : '-'}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

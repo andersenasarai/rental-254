@@ -83,7 +83,7 @@ export const PaymentHistory = () => {
       RENT PAYMENT RECEIPT
       
       Payment ID: ${payment.id}
-      Amount: $${payment.amount}
+      Amount: KSh ${payment.amount}
       Due Date: ${format(new Date(payment.due_date), 'MMM dd, yyyy')}
       ${payment.paid_date ? `Paid Date: ${format(new Date(payment.paid_date), 'MMM dd, yyyy')}` : ''}
       Status: ${payment.status}
@@ -186,7 +186,7 @@ export const PaymentHistory = () => {
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium">Amount</label>
-                                  <p className="text-lg font-bold">${Number(selectedPayment.amount).toLocaleString()}</p>
+                                  <p className="text-lg font-bold">KSh {Number(selectedPayment.amount).toLocaleString()}</p>
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium">Due Date</label>

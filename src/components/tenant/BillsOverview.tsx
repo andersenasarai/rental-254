@@ -152,7 +152,7 @@ export const BillsOverview = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Pending Total</p>
-                <p className="text-2xl font-bold text-orange-500">${totalPending.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-orange-500">KSh {totalPending.toFixed(2)}</p>
               </div>
               <Calendar className="h-8 w-8 text-orange-500" />
             </div>
@@ -200,7 +200,7 @@ export const BillsOverview = () => {
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <p className="text-2xl font-bold">${Number(bill.amount).toFixed(2)}</p>
+                          <p className="text-2xl font-bold">KSh {Number(bill.amount).toFixed(2)}</p>
                           <Badge variant={isOverdue ? "destructive" : "secondary"}>
                             {isOverdue ? "Overdue" : "Pending"}
                           </Badge>
@@ -246,7 +246,7 @@ export const BillsOverview = () => {
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <p className="text-2xl font-bold">${Number(bill.amount).toFixed(2)}</p>
+                          <p className="text-2xl font-bold">KSh {Number(bill.amount).toFixed(2)}</p>
                           <Badge variant="default" className="bg-green-500">
                             Paid
                           </Badge>
