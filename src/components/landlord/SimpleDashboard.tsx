@@ -7,6 +7,7 @@ import TenantManagement from './TenantManagement';
 import MoveOutNotices from './MoveOutNotices';
 import PaymentConfirmation from './PaymentConfirmation';
 import { TenantNotifications } from './TenantNotifications';
+import { TenantMessaging } from './TenantMessaging';
 
 export default function SimpleDashboard() {
   return (
@@ -65,12 +66,13 @@ export default function SimpleDashboard() {
 
       {/* Main Tabs */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">Financial Overview</TabsTrigger>
           <TabsTrigger value="tenants">Tenant Management</TabsTrigger>
           <TabsTrigger value="notices">Move-Out Notices</TabsTrigger>
           <TabsTrigger value="payments">Payment Confirmation</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="messaging">Messaging</TabsTrigger>
           <TabsTrigger value="coming-soon">More Features</TabsTrigger>
         </TabsList>
 
@@ -96,6 +98,10 @@ export default function SimpleDashboard() {
             payments={[]} 
             maintenanceRequests={[]} 
           />
+        </TabsContent>
+
+        <TabsContent value="messaging">
+          <TenantMessaging />
         </TabsContent>
 
         <TabsContent value="coming-soon">
