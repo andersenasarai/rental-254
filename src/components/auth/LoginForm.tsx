@@ -58,14 +58,14 @@ export function LoginForm() {
           description: "You have successfully logged in.",
         });
         
-        // Get user profile to determine redirect
-        const { data: profileData } = await supabase
-          .from('profiles')
+        // Get user role to determine redirect
+        const { data: roleData } = await supabase
+          .from('user_roles')
           .select('role')
           .eq('user_id', data.user.id)
           .single();
         
-        const redirectPath = profileData?.role === 'tenant' ? '/tenant/dashboard' : '/landlord/dashboard';
+        const redirectPath = roleData?.role === 'tenant' ? '/tenant/dashboard' : '/landlord/dashboard';
         window.location.href = redirectPath;
       }
     } catch (error) {
