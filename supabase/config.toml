@@ -1,1 +1,7 @@
 project_id = "virxkrthfylupilhlzsd"
+
+[functions.landlord-access-alert]
+verify_jwt = false
+
+[functions.landlord-approval]
+verify_jwt = false

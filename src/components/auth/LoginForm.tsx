@@ -58,27 +58,51 @@ export function LoginForm() {
           description: "You have successfully logged in.",
         });
         
-        // Get user role to determine redirect
+        // Get user role and approval status
         const { data: roleData } = await supabase
           .from('user_roles')
-          .select('role')
+          .select('role, approval_status')
           .eq('user_id', data.user.id)
           .single();
 
-        // Send alert email for landlord login attempts
         if (roleData?.role === 'landlord') {
+          // Check if landlord is approved
+          if (roleData.approval_status !== 'approved') {
+            toast({
+              title: "Access Pending",
+              description: "Your landlord access is pending approval. You will receive an email once approved.",
+              variant: "destructive",
+            });
+            
+            // Send alert email for landlord login attempts (even if not approved)
+            try {
+              await supabase.functions.invoke('landlord-access-alert', {
+                body: {
+                  email: email,
+                  timestamp: new Date().toISOString(),
+                  ipAddress: '',
+                  userAgent: navigator.userAgent
+                }
+              });
+            } catch (alertError) {
+              console.error("Failed to send landlord access alert:", alertError);
+            }
+            
+            return; // Block login
+          }
+          
+          // Send alert email for approved landlord login
           try {
             await supabase.functions.invoke('landlord-access-alert', {
               body: {
                 email: email,
                 timestamp: new Date().toISOString(),
-                ipAddress: '', // Could be populated if needed
+                ipAddress: '',
                 userAgent: navigator.userAgent
               }
             });
           } catch (alertError) {
             console.error("Failed to send landlord access alert:", alertError);
-            // Don't block login if alert fails
           }
         }
         
