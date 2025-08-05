@@ -26,7 +26,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { email, timestamp, ipAddress, userAgent }: LandlordAccessRequest = await req.json();
 
     // Send alert email to the admin/owner
-    const adminEmail = Deno.env.get("ADMIN_EMAIL") || "admin@yourdomain.com";
+    const adminEmail = "asaraimakokha1@gmail.com";
     
     // Generate approval tokens
     const user_id = await getUserIdByEmail(email);

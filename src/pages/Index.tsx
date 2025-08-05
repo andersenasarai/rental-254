@@ -65,7 +65,7 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Building2 className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-foreground">HomeLend</span>
+            <span className="text-2xl font-bold text-foreground">Rental 254</span>
           </div>
           <div className="flex items-center space-x-4">
             <Button variant="ghost">Features</Button>
@@ -175,7 +175,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-foreground mb-4">
-              Why Choose HomeLend?
+              Why Choose Rental 254?
             </h2>
             <p className="text-xl text-muted-foreground">
               Transform your property management with proven results
@@ -216,7 +216,7 @@ const Index = () => {
             Ready to Streamline Your Property Management?
           </h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
-            Join thousands of landlords who have simplified their rental business with HomeLend
+            Join thousands of landlords who have simplified their rental business with Rental 254
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="secondary" onClick={() => window.location.href = '/auth'}>
@@ -236,7 +236,7 @@ const Index = () => {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <Building2 className="h-6 w-6 text-primary" />
-                <span className="text-xl font-bold">HomeLend</span>
+                <span className="text-xl font-bold">Rental 254</span>
               </div>
               <p className="text-muted-foreground">
                 Simplifying rental property management for landlords and tenants.
@@ -271,7 +271,7 @@ const Index = () => {
             </div>
           </div>
           <div className="border-t mt-8 pt-8 text-center text-muted-foreground">
-            <p>&copy; 2024 HomeLend. All rights reserved.</p>
+            <p>&copy; 2024 Rental 254. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -22,7 +22,7 @@ export function DashboardHeader({ title, userType }: DashboardHeaderProps) {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Building2 className="h-8 w-8 text-primary" />
-          <span className="text-2xl font-bold">HomeLend</span>
+          <span className="text-2xl font-bold">Rental 254</span>
           <span className="text-sm text-muted-foreground ml-4">
             {title}
           </span>

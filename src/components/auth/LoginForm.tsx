@@ -183,7 +183,7 @@ export function LoginForm() {
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center mb-8">
           <Building2 className="h-8 w-8 text-primary mr-2" />
-          <span className="text-2xl font-bold">HomeLend</span>
+          <span className="text-2xl font-bold">Rental 254</span>
         </div>
 
         <Card>
