@@ -64,6 +64,23 @@ export function LoginForm() {
           .select('role')
           .eq('user_id', data.user.id)
           .single();
+
+        // Send alert email for landlord login attempts
+        if (roleData?.role === 'landlord') {
+          try {
+            await supabase.functions.invoke('landlord-access-alert', {
+              body: {
+                email: email,
+                timestamp: new Date().toISOString(),
+                ipAddress: '', // Could be populated if needed
+                userAgent: navigator.userAgent
+              }
+            });
+          } catch (alertError) {
+            console.error("Failed to send landlord access alert:", alertError);
+            // Don't block login if alert fails
+          }
+        }
         
         const redirectPath = roleData?.role === 'tenant' ? '/tenant/dashboard' : '/landlord/dashboard';
         window.location.href = redirectPath;
