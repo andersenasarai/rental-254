@@ -5,3 +5,12 @@ verify_jwt = false
 
 [functions.landlord-approval]
 verify_jwt = false
+
+[functions.move-out-notification]
+verify_jwt = false
+
+[functions.tenant-password-reset]
+verify_jwt = false
+
+[functions.landlord-password-reset]
+verify_jwt = false

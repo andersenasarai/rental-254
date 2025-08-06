@@ -99,6 +99,8 @@ export default function MoveOutNotice() {
         .eq('address', tenant.property_address)
         .single();
 
+      const submissionDate = new Date().toISOString();
+
       const { error } = await supabase
         .from('move_out_notices')
         .insert({
@@ -110,9 +112,38 @@ export default function MoveOutNotice() {
 
       if (error) throw error;
 
+      // Get full tenant details for notification
+      const { data: fullTenantData } = await supabase
+        .from('tenants')
+        .select('first_name, last_name, email, property_address')
+        .eq('id', tenant.id)
+        .single();
+
+      // Send move-out notification email
+      if (fullTenantData) {
+        try {
+          const { error: emailError } = await supabase.functions.invoke('move-out-notification', {
+            body: {
+              moveOutNoticeId: tenant.id,
+              tenantEmail: fullTenantData.email,
+              tenantName: `${fullTenantData.first_name} ${fullTenantData.last_name}`,
+              propertyAddress: fullTenantData.property_address || tenant.property_address || 'N/A',
+              moveOutDate: formData.move_out_date,
+              submissionDate: submissionDate
+            }
+          });
+
+          if (emailError) {
+            console.error("Error sending notification email:", emailError);
+          }
+        } catch (emailError) {
+          console.error("Error calling move-out-notification function:", emailError);
+        }
+      }
+
       toast({
         title: "Success",
-        description: "Move-out notice submitted successfully!",
+        description: "Move-out notice submitted successfully! You will receive a confirmation email with important details about your 30-day notice period.",
       });
 
       setOpen(false);

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Eye, EyeOff } from "lucide-react";
+import { Building2, Eye, EyeOff, Mail } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "./AuthProvider";
@@ -195,9 +195,10 @@ export function LoginForm() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="login">Sign In</TabsTrigger>
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                <TabsTrigger value="reset">Reset Password</TabsTrigger>
               </TabsList>
               
               <TabsContent value="login">
@@ -206,6 +207,10 @@ export function LoginForm() {
               
               <TabsContent value="signup">
                 <SignUpTab onSignUp={handleSignUp} isLoading={isLoading} showPassword={showPassword} setShowPassword={setShowPassword} />
+              </TabsContent>
+
+              <TabsContent value="reset">
+                <PasswordResetTab isLoading={isLoading} />
               </TabsContent>
             </Tabs>
           </CardContent>
@@ -368,5 +373,117 @@ function SignUpTab({
         {isLoading ? "Creating Account..." : "Create Account"}
       </Button>
     </form>
+  );
+}
+
+function PasswordResetTab({ isLoading }: { isLoading: boolean }) {
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"landlord" | "tenant">("tenant");
+  const [resetLoading, setResetLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setResetLoading(true);
+    try {
+      const functionName = role === 'tenant' ? 'tenant-password-reset' : 'landlord-password-reset';
+      
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: { email }
+      });
+
+      if (error) {
+        toast({
+          title: "Reset Failed",
+          description: error.message || "Failed to process password reset request",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Reset Request Sent",
+        description: role === 'tenant' 
+          ? "If your email is registered as a tenant, you will receive a password reset link."
+          : "Your password reset request has been submitted for administrator approval.",
+      });
+
+      setEmail("");
+    } catch (error: any) {
+      toast({
+        title: "Reset Failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="text-center mb-4">
+        <Mail className="h-12 w-12 text-primary mx-auto mb-2" />
+        <h3 className="text-lg font-semibold">Reset Password</h3>
+        <p className="text-sm text-muted-foreground">
+          Enter your email and role to reset your password
+        </p>
+      </div>
+      
+      <form onSubmit={handlePasswordReset} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="resetRole">Your Role</Label>
+          <Select value={role} onValueChange={(value: "landlord" | "tenant") => setRole(value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select your role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="tenant">Tenant</SelectItem>
+              <SelectItem value="landlord">Landlord</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="resetEmail">Email Address</Label>
+          <Input
+            id="resetEmail"
+            type="email"
+            placeholder="Enter your email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+
+        {role === 'landlord' && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <p className="text-sm text-amber-800">
+              <strong>Note:</strong> Landlord password resets require administrator approval for security reasons. 
+              You will receive an email once your request is approved.
+            </p>
+          </div>
+        )}
+
+        {role === 'tenant' && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-sm text-blue-800">
+              <strong>Note:</strong> You can only reset your password if you are registered as a tenant 
+              in the system by your landlord.
+            </p>
+          </div>
+        )}
+        
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={resetLoading || isLoading || !email}
+        >
+          {resetLoading ? "Sending Reset Request..." : "Send Reset Request"}
+        </Button>
+      </form>
+    </div>
   );
 }
