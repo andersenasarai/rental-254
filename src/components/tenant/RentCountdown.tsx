@@ -151,7 +151,7 @@ export const RentCountdown = () => {
             <div>
               <div className="font-semibold">Monthly Rent</div>
               <div className="text-lg font-bold text-primary">
-                ${Number(leaseData.monthly_rent).toLocaleString()}
+                KES {Number(leaseData.monthly_rent).toLocaleString()}
               </div>
             </div>
           </div>
