@@ -41,24 +41,26 @@ export const PaymentSubmission = () => {
     setIsSubmitting(true);
     try {
       // Get tenant info
-      const { data: tenant } = await supabase
+      const { data: tenant, error: tenantError } = await supabase
         .from("tenants")
         .select("id")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
+      if (tenantError) throw tenantError;
       if (!tenant) {
         throw new Error("Tenant not found");
       }
 
       // Get active lease
-      const { data: lease } = await supabase
+      const { data: lease, error: leaseError } = await supabase
         .from("leases")
         .select("id")
         .eq("tenant_id", tenant.id)
         .eq("status", "active")
-        .single();
+        .maybeSingle();
 
+      if (leaseError) throw leaseError;
       if (!lease) {
         throw new Error("Active lease not found");
       }

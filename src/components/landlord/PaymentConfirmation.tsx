@@ -87,7 +87,7 @@ export default function PaymentConfirmation() {
                     properties (title, address)
                   `)
                   .eq('id', payment.lease_id)
-                  .single();
+                  .maybeSingle();
 
                 return {
                   ...payment,
