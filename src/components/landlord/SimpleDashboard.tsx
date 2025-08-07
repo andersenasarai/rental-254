@@ -9,6 +9,7 @@ import PaymentConfirmation from './PaymentConfirmation';
 import { TenantNotifications } from './TenantNotifications';
 import { TenantMessaging } from './TenantMessaging';
 import PropertyManagement from './PropertyManagement';
+import PropertyStatsChart from './PropertyStatsChart';
 
 export default function SimpleDashboard() {
   return (
@@ -77,7 +78,8 @@ export default function SimpleDashboard() {
           <TabsTrigger value="messaging">Messaging</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview">
+        <TabsContent value="overview" className="space-y-6">
+          <PropertyStatsChart />
           <FinancialDashboard />
         </TabsContent>
 
