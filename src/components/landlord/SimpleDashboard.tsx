@@ -8,6 +8,7 @@ import MoveOutNotices from './MoveOutNotices';
 import PaymentConfirmation from './PaymentConfirmation';
 import { TenantNotifications } from './TenantNotifications';
 import { TenantMessaging } from './TenantMessaging';
+import PropertyManagement from './PropertyManagement';
 
 export default function SimpleDashboard() {
   return (
@@ -68,16 +69,20 @@ export default function SimpleDashboard() {
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">Financial Overview</TabsTrigger>
+          <TabsTrigger value="properties">Properties</TabsTrigger>
           <TabsTrigger value="tenants">Tenant Management</TabsTrigger>
           <TabsTrigger value="notices">Move-Out Notices</TabsTrigger>
           <TabsTrigger value="payments">Payment Confirmation</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="messaging">Messaging</TabsTrigger>
-          <TabsTrigger value="coming-soon">More Features</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
           <FinancialDashboard />
+        </TabsContent>
+
+        <TabsContent value="properties">
+          <PropertyManagement />
         </TabsContent>
 
         <TabsContent value="tenants">
@@ -104,19 +109,6 @@ export default function SimpleDashboard() {
           <TenantMessaging />
         </TabsContent>
 
-        <TabsContent value="coming-soon">
-          <Card>
-            <CardHeader>
-              <CardTitle>Coming Soon</CardTitle>
-              <CardDescription>Additional features will be available here</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Property management, tenant tracking, and maintenance tools are being developed.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
   );
