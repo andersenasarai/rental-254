@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building2, Users, DollarSign, Wrench, Bell, CreditCard } from 'lucide-react';
@@ -10,8 +10,84 @@ import { TenantNotifications } from './TenantNotifications';
 import { TenantMessaging } from './TenantMessaging';
 import PropertyManagement from './PropertyManagement';
 import PropertyStatsChart from './PropertyStatsChart';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/components/auth/AuthProvider';
+
+interface DashboardStats {
+  totalProperties: number;
+  activeLeases: number;
+  monthlyRevenue: number;
+  pendingMaintenance: number;
+}
 
 export default function SimpleDashboard() {
+  const { user } = useAuth();
+  const [stats, setStats] = useState<DashboardStats>({
+    totalProperties: 0,
+    activeLeases: 0,
+    monthlyRevenue: 0,
+    pendingMaintenance: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchDashboardStats();
+    }
+  }, [user]);
+
+  const fetchDashboardStats = async () => {
+    try {
+      // Get total properties
+      const { data: properties, error: propertiesError } = await supabase
+        .from('properties')
+        .select('id, monthly_rent')
+        .eq('user_id', user?.id);
+
+      if (propertiesError) throw propertiesError;
+
+      const totalProperties = properties?.length || 0;
+      const propertyIds = properties?.map(p => p.id) || [];
+
+      // Get active leases (tenants)
+      const { data: activeLeases, error: leasesError } = await supabase
+        .from('leases')
+        .select('id, monthly_rent')
+        .in('property_id', propertyIds)
+        .eq('status', 'active');
+
+      if (leasesError) throw leasesError;
+
+      const activeLeasesCount = activeLeases?.length || 0;
+      
+      // Calculate monthly revenue from active leases
+      const monthlyRevenue = activeLeases?.reduce((sum, lease) => {
+        return sum + (Number(lease.monthly_rent) || 0);
+      }, 0) || 0;
+
+      // Get pending maintenance requests
+      const { data: maintenance, error: maintenanceError } = await supabase
+        .from('maintenance_requests')
+        .select('id')
+        .in('property_id', propertyIds)
+        .in('status', ['submitted', 'in_progress']);
+
+      if (maintenanceError) throw maintenanceError;
+
+      const pendingMaintenance = maintenance?.length || 0;
+
+      setStats({
+        totalProperties,
+        activeLeases: activeLeasesCount,
+        monthlyRevenue,
+        pendingMaintenance,
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="space-y-6">
       <div>
@@ -27,7 +103,7 @@ export default function SimpleDashboard() {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{loading ? '...' : stats.totalProperties}</div>
             <p className="text-xs text-muted-foreground">Total properties</p>
           </CardContent>
         </Card>
@@ -38,7 +114,7 @@ export default function SimpleDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{loading ? '...' : stats.activeLeases}</div>
             <p className="text-xs text-muted-foreground">Active leases</p>
           </CardContent>
         </Card>
@@ -49,7 +125,9 @@ export default function SimpleDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">KSh 0</div>
+            <div className="text-2xl font-bold">
+              {loading ? '...' : `KSh ${stats.monthlyRevenue.toLocaleString()}`}
+            </div>
             <p className="text-xs text-muted-foreground">Monthly income</p>
           </CardContent>
         </Card>
@@ -60,7 +138,7 @@ export default function SimpleDashboard() {
             <Wrench className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{loading ? '...' : stats.pendingMaintenance}</div>
             <p className="text-xs text-muted-foreground">Pending requests</p>
           </CardContent>
         </Card>
