@@ -4,27 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabase';
+import { supabase, Database } from '@/lib/supabase';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { Plus, Building2, Edit, Trash2 } from 'lucide-react';
 import { PropertyForm } from './PropertyForm';
 
-interface Property {
-  id: string;
-  title: string;
-  address: string;
-  city: string;
-  state: string;
-  zip_code: string;
-  property_type: string;
-  bedrooms?: number;
-  bathrooms?: number;
-  square_feet?: number;
-  monthly_rent?: number;
-  status: string;
-  description?: string;
-  created_at: string;
-}
+type Property = Database['public']['Tables']['properties']['Row'];
 
 export default function PropertyManagement() {
   const { user } = useAuth();
