@@ -63,7 +63,7 @@ export function LoginForm() {
           .from('user_roles')
           .select('role, approval_status')
           .eq('user_id', data.user.id)
-          .single();
+          .maybeSingle();
 
         if (roleData?.role === 'landlord') {
           // Check if landlord is approved
@@ -156,9 +156,27 @@ export function LoginForm() {
       }
 
       if (data.user) {
+        // Send alert email for new landlord registrations
+        if (role === 'landlord') {
+          try {
+            await supabase.functions.invoke('landlord-access-alert', {
+              body: {
+                email: email,
+                timestamp: new Date().toISOString(),
+                ipAddress: '',
+                userAgent: navigator.userAgent
+              }
+            });
+          } catch (alertError) {
+            console.error("Failed to send landlord access alert:", alertError);
+          }
+        }
+        
         toast({
           title: "Account Created!",
-          description: "Please check your email to confirm your account, or if email confirmation is disabled, you can now sign in.",
+          description: role === 'landlord' 
+            ? "Your landlord account has been created and is pending approval. You will receive an email once approved."
+            : "Please check your email to confirm your account, or if email confirmation is disabled, you can now sign in.",
         });
         
         // If user is immediately confirmed (no email confirmation), redirect
