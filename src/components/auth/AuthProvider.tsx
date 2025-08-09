@@ -3,7 +3,10 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/lib/supabase';
 
-type Profile = Database['public']['Tables']['profiles']['Row'];
+type Profile = Database['public']['Tables']['profiles']['Row'] & {
+  approval_status?: string;
+  approved_at?: string;
+};
 
 interface AuthContextType {
   user: User | null;
@@ -44,10 +47,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return null;
       }
 
-      // Fetch user role from user_roles table
+      // Fetch user role and approval status from user_roles table
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
-        .select('role')
+        .select('role, approval_status, approved_at')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -55,10 +58,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Error fetching user role:', roleError);
       }
 
-      // Combine profile with role information
+      // Combine profile with role and approval information
       return {
         ...profileData,
-        role: roleData?.role || 'landlord' // Default to landlord if no role found
+        role: roleData?.role || 'landlord', // Default to landlord if no role found
+        approval_status: roleData?.approval_status || 'pending',
+        approved_at: roleData?.approved_at
       };
     } catch (error) {
       console.error('Error fetching profile:', error);

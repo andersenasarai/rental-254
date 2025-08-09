@@ -1,7 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+// Check if RESEND_API_KEY exists
+const resendApiKey = Deno.env.get("RESEND_API_KEY");
+if (!resendApiKey) {
+  console.error("RESEND_API_KEY is not configured");
+}
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -43,6 +48,21 @@ const handler = async (req: Request): Promise<Response> => {
     
     const approveUrl = `${baseUrl}/functions/v1/landlord-approval?user_id=${user_id}&action=approve&token=${approveToken}`;
     const rejectUrl = `${baseUrl}/functions/v1/landlord-approval?user_id=${user_id}&action=reject&token=${rejectToken}`;
+    
+    // Check if resend is available
+    if (!resend) {
+      console.error("Cannot send email: RESEND_API_KEY not configured");
+      return new Response(JSON.stringify({ 
+        error: "Email service not configured. Please set RESEND_API_KEY.",
+        approval_urls: { approveUrl, rejectUrl }
+      }), {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      });
+    }
     
     const emailResponse = await resend.emails.send({
       from: "Property Management System <alerts@resend.dev>",
