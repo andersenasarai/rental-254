@@ -40,16 +40,21 @@ export const PaymentSubmission = () => {
 
     setIsSubmitting(true);
     try {
-      // Get tenant info
+      // Get tenant info by email (since tenants might not have user accounts yet)
       const { data: tenant, error: tenantError } = await supabase
         .from("tenants")
         .select("id")
-        .eq("user_id", user.id)
+        .eq("email", user.email)
         .maybeSingle();
 
       if (tenantError) throw tenantError;
       if (!tenant) {
-        throw new Error("Tenant not found");
+        toast({
+          title: "Tenant Record Not Found",
+          description: "Please contact your landlord to set up your tenant account.",
+          variant: "destructive",
+        });
+        return;
       }
 
       // Get active lease
@@ -62,7 +67,12 @@ export const PaymentSubmission = () => {
 
       if (leaseError) throw leaseError;
       if (!lease) {
-        throw new Error("Active lease not found");
+        toast({
+          title: "Active Lease Not Found",
+          description: "No active lease found. Please contact your landlord.",
+          variant: "destructive",
+        });
+        return;
       }
 
       // Create payment record with pending status
