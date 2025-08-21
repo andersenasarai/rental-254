@@ -67,14 +67,46 @@ export default function TenantManagement() {
   const fetchTenants = async () => {
     try {
       const { data, error } = await supabase
-        .from('tenants')
-        .select('*')
-        .eq('user_id', user?.id);
+        .from("profiles")
+        .select("id, full_name, email, phone, role")
+        .eq("role", "tenant");
 
       if (error) throw error;
-      setTenants(data || []);
+
+      // Fetch additional details for each tenant from leases and properties tables
+      const tenantsWithDetails = await Promise.all(
+        (data || []).map(async (profile) => {
+          const { data: leaseData, error: leaseError } = await supabase
+            .from("leases")
+            .select("property_id, start_date, end_date, rent_amount, properties(address, city, state, zip_code, title)")
+            .eq("tenant_id", profile.id)
+            .eq("is_active", true)
+            .maybeSingle();
+
+          if (leaseError) console.error("Error fetching lease for tenant:", leaseError);
+
+          const property = leaseData?.properties;
+
+          return {
+            id: profile.id,
+            first_name: profile.full_name?.split(" ")[0] || "",
+            last_name: profile.full_name?.split(" ").slice(1).join(" ") || "",
+            email: profile.email,
+            phone: profile.phone || undefined,
+            property_address: property ? `${property.address}, ${property.city}, ${property.state} ${property.zip_code}` : undefined,
+            unit_number: property?.title || undefined, // Assuming title might be used for unit number
+            monthly_rent: leaseData?.rent_amount || undefined,
+            lease_start_date: leaseData?.start_date || undefined,
+            lease_end_date: leaseData?.end_date || undefined,
+            status: "active", // Placeholder, needs actual status logic
+            notes: undefined, // Placeholder
+          };
+        })
+      );
+
+      setTenants(tenantsWithDetails as Tenant[]);
     } catch (error) {
-      console.error('Error fetching tenants:', error);
+      console.error("Error fetching tenants:", error);
     } finally {
       setLoading(false);
     }
@@ -84,36 +116,41 @@ export default function TenantManagement() {
     try {
       // Fetch payments
       const { data: paymentsData } = await supabase
-        .from('payments')
+        .from("payments")
         .select(`
           *,
           leases!inner(tenant_id)
         `)
-        .eq('leases.tenant_id', tenantId)
-        .order('due_date', { ascending: false });
+        .eq("leases.tenant_id", tenantId)
+        .order("due_date", { ascending: false });
 
       // Fetch maintenance requests
       const { data: maintenanceData } = await supabase
-        .from('maintenance_requests')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false });
+        .from("maintenance_requests")
+        .select("*")
+        .eq("tenant_id", tenantId)
+        .order("created_at", { ascending: false });
 
       setTenantPayments(paymentsData || []);
       setMaintenanceRequests(maintenanceData || []);
     } catch (error) {
-      console.error('Error fetching tenant details:', error);
+      console.error("Error fetching tenant details:", error);
     }
   };
 
   const deleteTenant = async (tenantId: string) => {
     try {
-      const { error } = await supabase
-        .from('tenants')
+      // Delete the profile entry for the tenant
+      const { error: profileError } = await supabase
+        .from("profiles")
         .delete()
-        .eq('id', tenantId);
+        .eq("id", tenantId);
 
-      if (error) throw error;
+      if (profileError) throw profileError;
+
+      // Optionally, you might want to also delete the associated auth.users entry
+      // This would require admin privileges or a specific Supabase function.
+      // For now, just deleting the profile is sufficient for data consistency.
 
       toast({
         title: "Success",
@@ -133,16 +170,16 @@ export default function TenantManagement() {
   const getPaymentStatus = (tenant: Tenant) => {
     // This would ideally check recent payments
     // For now, returning a placeholder status
-    return 'pending';
+    return "pending";
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'paid':
+      case "paid":
         return <Badge variant="default" className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />Paid</Badge>;
-      case 'pending':
+      case "pending":
         return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
-      case 'overdue':
+      case "overdue":
         return <Badge variant="destructive"><AlertCircle className="w-3 h-3 mr-1" />Overdue</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
@@ -151,11 +188,11 @@ export default function TenantManagement() {
 
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
-      case 'high':
+      case "high":
         return <Badge variant="destructive">High</Badge>;
-      case 'medium':
+      case "medium":
         return <Badge variant="secondary">Medium</Badge>;
-      case 'low':
+      case "low":
         return <Badge variant="outline">Low</Badge>;
       default:
         return <Badge variant="outline">{priority}</Badge>;
@@ -382,21 +419,15 @@ export default function TenantManagement() {
                                   ) : (
                                     <div className="space-y-3">
                                       {maintenanceRequests.slice(0, 5).map((request) => (
-                                        <div key={request.id} className="border rounded-lg p-3">
-                                          <div className="flex items-start justify-between">
-                                            <div className="flex-1">
-                                              <div className="flex items-center gap-2 mb-1">
-                                                <h4 className="font-medium">{request.title}</h4>
-                                                {getPriorityBadge(request.priority)}
-                                              </div>
-                                              <p className="text-sm text-muted-foreground mb-2">
-                                                {request.description}
-                                              </p>
-                                              <p className="text-xs text-muted-foreground">
-                                                Submitted on {format(new Date(request.created_at), 'MMM dd, yyyy')}
-                                              </p>
-                                            </div>
-                                            <Badge variant="outline">{request.status}</Badge>
+                                        <div key={request.id} className="border rounded-md p-3">
+                                          <div className="flex justify-between items-center mb-1">
+                                            <h4 className="font-medium">{request.title}</h4>
+                                            {getPriorityBadge(request.priority)}
+                                          </div>
+                                          <p className="text-sm text-muted-foreground mb-2">{request.description}</p>
+                                          <div className="flex justify-between items-center text-xs text-muted-foreground">
+                                            <span>Status: {request.status}</span>
+                                            <span>Submitted: {format(new Date(request.created_at), 'MMM dd, yyyy')}</span>
                                           </div>
                                         </div>
                                       ))}
@@ -408,7 +439,6 @@ export default function TenantManagement() {
                           )}
                         </DialogContent>
                         </Dialog>
-                        
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="destructive" size="sm">
@@ -417,19 +447,15 @@ export default function TenantManagement() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Tenant</AlertDialogTitle>
+                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to delete {tenant.first_name} {tenant.last_name}? 
-                                This action cannot be undone.
+                                This action cannot be undone. This will permanently delete the tenant's profile and associated data.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => deleteTenant(tenant.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
+                              <AlertDialogAction onClick={() => selectedTenant && deleteTenant(selectedTenant.id)}>
+                                Continue
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -444,23 +470,42 @@ export default function TenantManagement() {
         </CardContent>
       </Card>
         </TabsContent>
-
         <TabsContent value="notices">
           <MoveOutNotices />
         </TabsContent>
       </Tabs>
 
-      <AddTenantForm 
-        open={addTenantOpen} 
-        onOpenChange={setAddTenantOpen} 
-        onTenantAdded={fetchTenants} 
-      />
-      
-      <ExcelImport 
-        open={excelImportOpen} 
-        onOpenChange={setExcelImportOpen} 
-        onImportComplete={fetchTenants} 
-      />
+      <Dialog open={addTenantOpen} onOpenChange={setAddTenantOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add New Tenant</DialogTitle>
+            <DialogDescription>
+              Fill in the details to add a new tenant to your property.
+            </DialogDescription>
+          </DialogHeader>
+          <AddTenantForm onSuccess={() => {
+            setAddTenantOpen(false);
+            fetchTenants();
+          }} />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={excelImportOpen} onOpenChange={setExcelImportOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Import Tenants from Excel</DialogTitle>
+            <DialogDescription>
+              Upload an Excel file (.xlsx) with tenant data.
+            </DialogDescription>
+          </DialogHeader>
+          <ExcelImport onSuccess={() => {
+            setExcelImportOpen(false);
+            fetchTenants();
+          }} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
+

@@ -40,29 +40,30 @@ export const PaymentSubmission = () => {
 
     setIsSubmitting(true);
     try {
-      // Get tenant info by email (since tenants might not have user accounts yet)
-      const { data: tenant, error: tenantError } = await supabase
-        .from("tenants")
-        .select("id")
-        .eq("email", user.email)
+      // Get tenant info from profiles table using user.id
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, role")
+        .eq("id", user.id)
+        .eq("role", "tenant")
         .maybeSingle();
 
-      if (tenantError) throw tenantError;
-      if (!tenant) {
+      if (profileError) throw profileError;
+      if (!profile || profile.role !== "tenant") {
         toast({
-          title: "Tenant Record Not Found",
-          description: "Please contact your landlord to set up your tenant account.",
+          title: "Access Denied",
+          description: "Only tenants can submit payments.",
           variant: "destructive",
         });
         return;
       }
 
-      // Get active lease
+      // Get active lease for the tenant
       const { data: lease, error: leaseError } = await supabase
         .from("leases")
-        .select("id")
-        .eq("tenant_id", tenant.id)
-        .eq("status", "active")
+        .select("id, landlord_id")
+        .eq("tenant_id", profile.id)
+        .eq("is_active", true) // Assuming 'is_active' is the correct column for active leases
         .maybeSingle();
 
       if (leaseError) throw leaseError;
@@ -80,8 +81,10 @@ export const PaymentSubmission = () => {
         .from("payments")
         .insert({
           lease_id: lease.id,
+          tenant_id: profile.id, // Use the profile ID as tenant_id
+          landlord_id: lease.landlord_id, // Get landlord_id from the lease
           amount: parseFloat(values.amount),
-          due_date: new Date().toISOString().split('T')[0], // Today's date
+          due_date: new Date().toISOString().split("T")[0], // Today's date
           status: "pending", // Landlord needs to confirm
           payment_method: values.payment_method,
           notes: `Transaction Ref: ${values.transaction_reference}${values.notes ? ` - ${values.notes}` : ""}`,
@@ -219,3 +222,5 @@ export const PaymentSubmission = () => {
     </Card>
   );
 };
+
+
