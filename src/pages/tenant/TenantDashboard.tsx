@@ -1,8 +1,11 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RentCountdown } from "@/components/tenant/RentCountdown";
+import EnhancedRentCountdown from "@/components/tenant/EnhancedRentCountdown";
 import { PaymentHistory } from "@/components/tenant/PaymentHistory";
+import PaymentHistoryGraph from "@/components/tenant/PaymentHistoryGraph";
 import { PaymentSubmission } from "@/components/tenant/PaymentSubmission";
 import { MaintenanceRequests } from "@/components/tenant/MaintenanceRequests";
+import MaintenanceHistoryReport from "@/components/tenant/MaintenanceHistoryReport";
 import { TenantPersonalInfo } from "@/components/tenant/TenantPersonalInfo";
 import MoveOutNotice from "@/components/tenant/MoveOutNotice";
 import MpesaPayment from "@/components/tenant/MpesaPayment";
@@ -25,12 +28,13 @@ const TenantDashboard = () => {
 
         {/* Rent Countdown - Always visible at top */}
         <div className="mb-8">
-          <RentCountdown />
+          <EnhancedRentCountdown />
         </div>
 
         <Tabs defaultValue="payments" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="mpesa">M-Pesa</TabsTrigger>
             <TabsTrigger value="checklist">Move-In</TabsTrigger>
             <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
@@ -43,6 +47,10 @@ const TenantDashboard = () => {
             <PaymentHistory />
           </TabsContent>
 
+          <TabsContent value="analytics" className="space-y-6">
+            <PaymentHistoryGraph />
+          </TabsContent>
+
           <TabsContent value="mpesa" className="space-y-6">
             <MpesaPayment />
           </TabsContent>
@@ -53,6 +61,7 @@ const TenantDashboard = () => {
 
           <TabsContent value="maintenance" className="space-y-6">
             <MaintenanceRequests />
+            <MaintenanceHistoryReport />
           </TabsContent>
 
           <TabsContent value="profile" className="space-y-6">
