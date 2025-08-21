@@ -5,6 +5,8 @@ import { PaymentSubmission } from "@/components/tenant/PaymentSubmission";
 import { MaintenanceRequests } from "@/components/tenant/MaintenanceRequests";
 import { TenantPersonalInfo } from "@/components/tenant/TenantPersonalInfo";
 import MoveOutNotice from "@/components/tenant/MoveOutNotice";
+import MpesaPayment from "@/components/tenant/MpesaPayment";
+import MoveInChecklist from "@/components/tenant/MoveInChecklist";
 import { DashboardHeader } from "@/components/DashboardHeader";
 
 const TenantDashboard = () => {
@@ -27,16 +29,26 @@ const TenantDashboard = () => {
         </div>
 
         <Tabs defaultValue="payments" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="mpesa">M-Pesa</TabsTrigger>
+            <TabsTrigger value="checklist">Move-In</TabsTrigger>
             <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
             <TabsTrigger value="profile">Personal Info</TabsTrigger>
-            <TabsTrigger value="notices">Move-Out</TabsTrigger>
+            <TabsTrigger value="moveout">Move Out</TabsTrigger>
           </TabsList>
 
           <TabsContent value="payments" className="space-y-6">
             <PaymentSubmission />
             <PaymentHistory />
+          </TabsContent>
+
+          <TabsContent value="mpesa" className="space-y-6">
+            <MpesaPayment />
+          </TabsContent>
+
+          <TabsContent value="checklist" className="space-y-6">
+            <MoveInChecklist />
           </TabsContent>
 
           <TabsContent value="maintenance" className="space-y-6">
@@ -47,7 +59,7 @@ const TenantDashboard = () => {
             <TenantPersonalInfo />
           </TabsContent>
 
-          <TabsContent value="notices" className="space-y-6">
+          <TabsContent value="moveout" className="space-y-6">
             <MoveOutNotice />
           </TabsContent>
         </Tabs>
