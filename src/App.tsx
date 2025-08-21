@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import LandlordDashboard from "./pages/landlord/LandlordDashboard";
 import TenantDashboard from "./pages/tenant/TenantDashboard";
+import AdminPage from "./pages/admin/AdminPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,14 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<LoginForm />} />
             <Route 
+              path="/landlord" 
+              element={
+                <ProtectedRoute>
+                  <LandlordDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/landlord/dashboard" 
               element={
                 <ProtectedRoute>
@@ -32,10 +41,26 @@ const App = () => (
               } 
             />
             <Route 
+              path="/tenant" 
+              element={
+                <ProtectedRoute>
+                  <TenantDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/tenant/dashboard" 
               element={
                 <ProtectedRoute>
                   <TenantDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute>
+                  <AdminPage />
                 </ProtectedRoute>
               } 
             />

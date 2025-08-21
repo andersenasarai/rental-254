@@ -6,6 +6,7 @@ import { Database } from '@/lib/supabase';
 type Profile = Database['public']['Tables']['profiles']['Row'] & {
   approval_status?: string;
   approved_at?: string;
+  login_id?: string;
 };
 
 interface AuthContextType {
@@ -35,11 +36,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
-      // Fetch profile data
+      // Fetch profile data including login_id
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
+        .select('*, login_id')
+        .eq('id', userId)
         .maybeSingle();
 
       if (profileError) {
@@ -47,23 +48,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return null;
       }
 
-      // Fetch user role and approval status from user_roles table
+      // For backward compatibility, also check user_roles table if it exists
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role, approval_status, approved_at')
         .eq('user_id', userId)
         .maybeSingle();
 
-      if (roleError) {
+      if (roleError && roleError.code !== 'PGRST116') {
         console.error('Error fetching user role:', roleError);
       }
 
       // Combine profile with role and approval information
       return {
         ...profileData,
-        role: roleData?.role || 'landlord', // Default to landlord if no role found
-        approval_status: roleData?.approval_status || 'pending',
-        approved_at: roleData?.approved_at
+        role: profileData?.role || roleData?.role || 'tenant', // Use profile role first, then fallback
+        approval_status: roleData?.approval_status || 'approved', // Default to approved for new system
+        approved_at: roleData?.approved_at,
+        login_id: profileData?.login_id,
       };
     } catch (error) {
       console.error('Error fetching profile:', error);
