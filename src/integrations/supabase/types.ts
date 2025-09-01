@@ -7,13 +7,39 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
   public: {
     Tables: {
+      admins: {
+        Row: {
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admins_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       house_inventory: {
         Row: {
           condition: string
@@ -55,6 +81,35 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      landlords: {
+        Row: {
+          created_at: string | null
+          landlord_id: string
+          phone_number: string | null
+          property_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          landlord_id: string
+          phone_number?: string | null
+          property_name: string
+        }
+        Update: {
+          created_at?: string | null
+          landlord_id?: string
+          phone_number?: string | null
+          property_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landlords_landlord_id_fkey"
+            columns: ["landlord_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       leases: {
         Row: {
@@ -106,7 +161,7 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
-            referencedColumns: ["id"]
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -163,7 +218,7 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
-            referencedColumns: ["id"]
+            referencedColumns: ["tenant_id"]
           },
         ]
       }
@@ -253,24 +308,36 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          email: string | null
           full_name: string | null
           id: string
+          landlord_id: string | null
+          login_id: string | null
+          phone: string | null
           role: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id?: string
+          landlord_id?: string | null
+          login_id?: string | null
+          phone?: string | null
           role?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id?: string
+          landlord_id?: string | null
+          login_id?: string | null
+          phone?: string | null
           role?: string | null
           updated_at?: string
           user_id?: string
@@ -414,7 +481,6 @@ export type Database = {
           created_at: string
           email: string
           first_name: string
-          id: string
           last_name: string
           lease_end_date: string | null
           lease_start_date: string | null
@@ -424,6 +490,7 @@ export type Database = {
           property_address: string | null
           security_deposit: number | null
           status: string | null
+          tenant_id: string
           unit_number: string | null
           updated_at: string
           user_id: string
@@ -432,7 +499,6 @@ export type Database = {
           created_at?: string
           email: string
           first_name: string
-          id?: string
           last_name: string
           lease_end_date?: string | null
           lease_start_date?: string | null
@@ -442,6 +508,7 @@ export type Database = {
           property_address?: string | null
           security_deposit?: number | null
           status?: string | null
+          tenant_id?: string
           unit_number?: string | null
           updated_at?: string
           user_id: string
@@ -450,7 +517,6 @@ export type Database = {
           created_at?: string
           email?: string
           first_name?: string
-          id?: string
           last_name?: string
           lease_end_date?: string | null
           lease_start_date?: string | null
@@ -460,6 +526,7 @@ export type Database = {
           property_address?: string | null
           security_deposit?: number | null
           status?: string | null
+          tenant_id?: string
           unit_number?: string | null
           updated_at?: string
           user_id?: string
@@ -505,7 +572,7 @@ export type Database = {
     }
     Functions: {
       approve_landlord_access: {
-        Args: { _user_id: string; _approved_by: string; _notes?: string }
+        Args: { _approved_by: string; _notes?: string; _user_id: string }
         Returns: boolean
       }
       get_user_role: {
@@ -513,14 +580,13 @@ export type Database = {
         Returns: Database["public"]["Enums"]["app_role"]
       }
       has_role: {
-        Args: {
-          _user_id: string
-          _role: Database["public"]["Enums"]["app_role"]
-        }
+        Args:
+          | { _role: Database["public"]["Enums"]["app_role"]; _user_id: string }
+          | { requested_role: string }
         Returns: boolean
       }
       reject_landlord_access: {
-        Args: { _user_id: string; _approved_by: string; _notes?: string }
+        Args: { _approved_by: string; _notes?: string; _user_id: string }
         Returns: boolean
       }
     }
