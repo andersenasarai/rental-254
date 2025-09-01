@@ -39,7 +39,7 @@ export function LoginForm({ onSuccess }: LoginFormProps = {}) {
       // First, find the user by login_id
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('id, email, role, login_id')
+        .select('id, email, role, login_id, full_name')
         .eq('login_id', loginId)
         .eq('role', expectedRole)
         .maybeSingle();

@@ -63,7 +63,16 @@ export default function AdminDashboard() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUsers(data || []);
+      setUsers((data || []).map(user => ({
+        id: user.id,
+        login_id: user.login_id,
+        full_name: user.full_name,
+        email: user.email || '',
+        phone: user.phone,
+        role: user.role as 'landlord' | 'tenant' | 'admin',
+        created_at: user.created_at,
+        updated_at: user.updated_at
+      })));
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
@@ -99,7 +108,7 @@ export default function AdminDashboard() {
       const { count: leaseCount } = await supabase
         .from('leases')
         .select('*', { count: 'exact', head: true })
-        .eq('is_active', true);
+        .eq('status', 'active');
 
       setStats({
         totalLandlords: landlordCount || 0,

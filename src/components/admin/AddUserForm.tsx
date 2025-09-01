@@ -110,10 +110,16 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
       } else if (authData.user) {
         // New user created successfully
         // The profile should be created automatically via the trigger
-        // But let's ensure the login_id is set
+        // But let's ensure the login_id and other data is set
         const { error: updateError } = await supabase
           .from('profiles')
-          .update({ login_id: formData.login_id })
+          .update({ 
+            login_id: formData.login_id,
+            email: formData.email,
+            phone: formData.phone,
+            full_name: formData.full_name,
+            role: formData.role
+          })
           .eq('id', authData.user.id);
 
         if (updateError) {
