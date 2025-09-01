@@ -72,7 +72,7 @@ const Index = () => {
             <Button variant="ghost">Pricing</Button>
             <Button variant="outline" onClick={() => window.location.href = '/auth'}>Sign In</Button>
             <Button onClick={() => window.location.href = '/auth'}>Get Started</Button>
-            <Button variant="ghost" onClick={() => window.location.href = '/admin-login'}>Admin</Button>
+            <Button variant="ghost" onClick={() => window.location.href = '/auth'}>Admin</Button>
           </div>
         </div>
       </header>
