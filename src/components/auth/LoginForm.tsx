@@ -69,7 +69,7 @@ export function LoginForm({ onSuccess }: LoginFormProps = {}) {
       if (authData.user) {
         toast({
           title: "Success",
-          description: `Welcome back, ${profile.login_id}!`,
+          description: `Welcome back, ${profile?.login_id || profile?.full_name}!`,
         });
 
         if (onSuccess) {
