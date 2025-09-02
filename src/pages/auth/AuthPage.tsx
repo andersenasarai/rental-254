@@ -1,6 +1,6 @@
 import React from 'react';
-import { SimpleLogin } from '@/components/auth/SimpleLogin';
+import { EnhancedAuth } from '@/components/auth/EnhancedAuth';
 
 export default function AuthPage() {
-  return <SimpleLogin />;
+  return <EnhancedAuth />;
 }

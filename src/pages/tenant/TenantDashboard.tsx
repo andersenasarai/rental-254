@@ -1,11 +1,11 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RentCountdown } from "@/components/tenant/RentCountdown";
-import EnhancedRentCountdown from "@/components/tenant/EnhancedRentCountdown";
+import { SimplifiedTenantCountdown } from "@/components/tenant/SimplifiedTenantCountdown";
 import { PaymentHistory } from "@/components/tenant/PaymentHistory";
 import PaymentHistoryGraph from "@/components/tenant/PaymentHistoryGraph";
 import { PaymentSubmission } from "@/components/tenant/PaymentSubmission";
 import { MaintenanceRequests } from "@/components/tenant/MaintenanceRequests";
-import MaintenanceHistoryReport from "@/components/tenant/MaintenanceHistoryReport";
+import { SimplifiedMaintenanceHistory } from "@/components/tenant/SimplifiedMaintenanceHistory";
 import { TenantPersonalInfo } from "@/components/tenant/TenantPersonalInfo";
 import MoveOutNotice from "@/components/tenant/MoveOutNotice";
 import MpesaPayment from "@/components/tenant/MpesaPayment";
@@ -28,7 +28,7 @@ const TenantDashboard = () => {
 
         {/* Rent Countdown - Always visible at top */}
         <div className="mb-8">
-          <EnhancedRentCountdown />
+          <SimplifiedTenantCountdown />
         </div>
 
         <Tabs defaultValue="payments" className="space-y-6">
@@ -61,7 +61,7 @@ const TenantDashboard = () => {
 
           <TabsContent value="maintenance" className="space-y-6">
             <MaintenanceRequests />
-            <MaintenanceHistoryReport />
+            <SimplifiedMaintenanceHistory />
           </TabsContent>
 
           <TabsContent value="profile" className="space-y-6">

@@ -48,11 +48,42 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('landlords');
 
   useEffect(() => {
-    if (user && profile?.role === 'admin') {
+    if (user) {
+      checkAdminAccess();
+    }
+  }, [user]);
+
+  const checkAdminAccess = async () => {
+    try {
+      // Check if user has admin role
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (profileError || profile?.role !== 'admin') {
+        toast({
+          title: "Access Denied",
+          description: "Admin access required to view this page",
+          variant: "destructive",
+        });
+        window.location.href = '/auth';
+        return;
+      }
+
       fetchUsers();
       fetchStats();
+    } catch (error) {
+      console.error('Error checking admin access:', error);
+      toast({
+        title: "Error",
+        description: "Failed to verify admin access",
+        variant: "destructive",
+      });
+      window.location.href = '/auth';
     }
-  }, [user, profile]);
+  };
 
   const fetchUsers = async () => {
     try {

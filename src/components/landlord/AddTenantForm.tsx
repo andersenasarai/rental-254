@@ -49,7 +49,7 @@ export default function AddTenantForm({ onSuccess }: AddTenantFormProps) {
       const { data, error } = await supabase
         .from("properties")
         .select("id, title, address")
-        .eq("landlord_id", currentUser?.id);
+        .eq("user_id", currentUser?.id);
 
       if (error) throw error;
       setProperties(data || []);
@@ -141,13 +141,10 @@ export default function AddTenantForm({ onSuccess }: AddTenantFormProps) {
       .insert({
         property_id: formData.property_id,
         tenant_id: tenantId,
-        landlord_id: currentUser.id,
         start_date: formData.lease_start_date,
         end_date: formData.lease_end_date,
-        rent_amount: parseFloat(formData.monthly_rent),
-        deposit_amount: formData.security_deposit ? parseFloat(formData.security_deposit) : null,
-        lease_terms: formData.notes, // Using notes as lease_terms for now
-        is_active: true,
+        monthly_rent: parseFloat(formData.monthly_rent),
+        security_deposit: formData.security_deposit ? parseFloat(formData.security_deposit) : null,
       });
 
     if (leaseError) throw leaseError;

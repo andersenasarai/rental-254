@@ -118,6 +118,7 @@ export type Database = {
           id: string
           monthly_rent: number
           property_id: string
+          rent_amount: number | null
           security_deposit: number | null
           start_date: string
           status: string
@@ -130,6 +131,7 @@ export type Database = {
           id?: string
           monthly_rent: number
           property_id: string
+          rent_amount?: number | null
           security_deposit?: number | null
           start_date: string
           status?: string
@@ -142,6 +144,7 @@ export type Database = {
           id?: string
           monthly_rent?: number
           property_id?: string
+          rent_amount?: number | null
           security_deposit?: number | null
           start_date?: string
           status?: string
@@ -164,6 +167,27 @@ export type Database = {
             referencedColumns: ["tenant_id"]
           },
         ]
+      }
+      maintenance_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
       maintenance_requests: {
         Row: {
@@ -255,6 +279,33 @@ export type Database = {
           status?: string
           tenant_id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      password_reset_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          token: string
+          used: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          token: string
+          used?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          token?: string
+          used?: boolean | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -401,6 +452,36 @@ export type Database = {
         }
         Relationships: []
       }
+      rent_countdown_settings: {
+        Row: {
+          created_at: string
+          custom_message: string | null
+          due_day_of_month: number
+          id: string
+          notification_days_before: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          custom_message?: string | null
+          due_day_of_month?: number
+          id?: string
+          notification_days_before?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          custom_message?: string | null
+          due_day_of_month?: number
+          id?: string
+          notification_days_before?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tenant_bills: {
         Row: {
           amount: number
@@ -481,6 +562,7 @@ export type Database = {
           created_at: string
           email: string
           first_name: string
+          id: string | null
           last_name: string
           lease_end_date: string | null
           lease_start_date: string | null
@@ -499,6 +581,7 @@ export type Database = {
           created_at?: string
           email: string
           first_name: string
+          id?: string | null
           last_name: string
           lease_end_date?: string | null
           lease_start_date?: string | null
@@ -517,6 +600,7 @@ export type Database = {
           created_at?: string
           email?: string
           first_name?: string
+          id?: string | null
           last_name?: string
           lease_end_date?: string | null
           lease_start_date?: string | null
@@ -574,6 +658,14 @@ export type Database = {
       approve_landlord_access: {
         Args: { _approved_by: string; _notes?: string; _user_id: string }
         Returns: boolean
+      }
+      get_tenant_maintenance_history: {
+        Args: { tenant_user_id: string }
+        Returns: Json
+      }
+      get_tenant_payment_countdown: {
+        Args: { tenant_user_id: string }
+        Returns: Json
       }
       get_user_role: {
         Args: { _user_id: string }
