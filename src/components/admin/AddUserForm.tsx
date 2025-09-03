@@ -42,6 +42,11 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
     setLoading(true);
 
     try {
+      // Validate Gmail address
+      if (!formData.email.includes('@gmail.com') && !formData.email.includes('@')) {
+        throw new Error('Please provide a valid Gmail address');
+      }
+
       // Check if login_id already exists
       const { data: existingUser, error: checkError } = await supabase
         .from('profiles')
@@ -62,14 +67,12 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
         return;
       }
 
-      // Create synthetic email for Supabase Auth
-      const syntheticEmail = `${formData.login_id.toLowerCase()}@auth.local`;
-
-      // Create user in Supabase Auth
+      // Use real Gmail address for authentication
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: syntheticEmail,
+        email: formData.email,
         password: formData.password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth`,
           data: {
             full_name: formData.full_name,
             phone: formData.phone,
@@ -81,29 +84,7 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
 
       if (authError) {
         if (authError.message.includes('already registered')) {
-          // If synthetic email already exists, try to update the profile
-          const { data: existingProfile, error: profileError } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('email', syntheticEmail)
-            .maybeSingle();
-
-          if (profileError) throw profileError;
-
-          if (existingProfile) {
-            // Update existing profile
-            const { error: updateError } = await supabase
-              .from('profiles')
-              .update({
-                full_name: formData.full_name,
-                phone: formData.phone,
-                role: formData.role,
-                login_id: formData.login_id,
-              })
-              .eq('id', existingProfile.id);
-
-            if (updateError) throw updateError;
-          }
+          throw new Error('A user with this email already exists. Please use a different email address.');
         } else {
           throw authError;
         }
@@ -123,13 +104,13 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
           .eq('id', authData.user.id);
 
         if (updateError) {
-          console.error('Error updating login_id:', updateError);
+          console.error('Error updating profile:', updateError);
         }
       }
 
       toast({
         title: "Success",
-        description: `${formData.role} account created successfully with ID: ${formData.login_id}`,
+        description: `${formData.role} account created successfully with ID: ${formData.login_id}. User will receive email confirmation.`,
       });
 
       onSuccess();
@@ -182,7 +163,7 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
           required
         />
         <p className="text-xs text-muted-foreground mt-1">
-          This ID will be used for login. Format: LL-000001 (Landlord) or TN-000001 (Tenant)
+          Reference ID for identification. Format: LL-000001 (Landlord) or TN-000001 (Tenant)
         </p>
       </div>
 
@@ -197,16 +178,17 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
       </div>
 
       <div>
-        <Label htmlFor="email">Email *</Label>
+        <Label htmlFor="email">Gmail Address *</Label>
         <Input
           id="email"
           type="email"
           value={formData.email}
           onChange={(e) => handleInputChange('email', e.target.value)}
+          placeholder="user@gmail.com"
           required
         />
         <p className="text-xs text-muted-foreground mt-1">
-          For contact purposes only. Login will use the Login ID above.
+          Gmail address for login authentication. Login ID is for reference only.
         </p>
       </div>
 
@@ -242,4 +224,3 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
     </form>
   );
 }
-

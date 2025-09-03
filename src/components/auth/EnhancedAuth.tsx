@@ -109,22 +109,16 @@ export function EnhancedAuth() {
 
       if (error) throw error;
 
-      // Check if user has landlord role and is approved
-      const { data: userRole, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role, approval_status')
+      // Check if user has landlord role in profiles table
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role, id')
         .eq('user_id', data.user.id)
-        .eq('role', 'landlord')
         .single();
 
-      if (roleError || !userRole) {
+      if (profileError || !profile || profile.role !== 'landlord') {
         await supabase.auth.signOut();
         throw new Error('Invalid landlord credentials');
-      }
-
-      if (userRole.approval_status !== 'approved') {
-        await supabase.auth.signOut();
-        throw new Error('Landlord account not yet approved by admin');
       }
 
       toast({
@@ -386,17 +380,17 @@ export function EnhancedAuth() {
             <TabsContent value="landlord" className="space-y-4">
               <div className="text-center py-2">
                 <h3 className="font-semibold">Landlord Portal</h3>
-                <p className="text-sm text-muted-foreground">Use credentials provided by admin</p>
+                <p className="text-sm text-muted-foreground">Use Gmail credentials provided by admin</p>
               </div>
               <form onSubmit={handleLandlordLogin} className="space-y-4">
                 <div>
-                  <Label htmlFor="landlord-email">Email</Label>
+                  <Label htmlFor="landlord-email">Gmail Address</Label>
                   <Input
                     id="landlord-email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="Email provided by admin"
+                    placeholder="Gmail provided by admin"
                     required
                   />
                 </div>
