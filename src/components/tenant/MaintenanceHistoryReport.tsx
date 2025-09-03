@@ -133,11 +133,15 @@ export default function MaintenanceHistoryReport() {
       
       // Fetch maintenance history using the database function
       const { data: maintenanceData, error: maintenanceError } = await supabase
-        .rpc('get_tenant_maintenance_history', { tenant_uuid: user?.id });
+        .rpc('get_tenant_maintenance_history', { tenant_user_id: user?.id });
 
       if (maintenanceError) throw maintenanceError;
       
-      setRequests(maintenanceData || []);
+      if (maintenanceData && Array.isArray(maintenanceData)) {
+        setRequests(maintenanceData as any[]);
+      } else {
+        setRequests([]);
+      }
 
     } catch (error: any) {
       console.error('Error fetching maintenance data:', error);
@@ -155,12 +159,16 @@ export default function MaintenanceHistoryReport() {
     try {
       const { data: categoriesData, error: categoriesError } = await supabase
         .from('maintenance_categories')
-        .select('name, description, icon, color')
-        .eq('is_active', true)
-        .order('sort_order');
+        .select('name, description')
+        .order('name');
 
       if (categoriesError) throw categoriesError;
-      setCategories(categoriesData || []);
+      const processedCategories = (categoriesData || []).map(cat => ({
+        ...cat,
+        icon: '',
+        color: '#000000'
+      }));
+      setCategories(processedCategories);
     } catch (error) {
       console.error('Error fetching categories:', error);
     }

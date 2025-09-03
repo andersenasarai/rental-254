@@ -69,25 +69,29 @@ export default function EnhancedRentCountdown() {
       
       // Fetch payment countdown data
       const { data: countdownData, error: countdownError } = await supabase
-        .rpc('get_tenant_payment_countdown', { tenant_uuid: user?.id });
+        .rpc('get_tenant_payment_countdown', { tenant_user_id: user?.id });
 
       if (countdownError) throw countdownError;
       
-      if (countdownData && countdownData.length > 0) {
-        setCountdown(countdownData[0]);
+      if (countdownData && typeof countdownData === 'object') {
+        setCountdown(countdownData as any);
       }
 
       // Fetch countdown settings
       const { data: settingsData, error: settingsError } = await supabase
         .from('rent_countdown_settings')
-        .select('due_day_of_month, grace_period_days, late_fee_amount')
-        .eq('is_active', true)
+        .select('due_day_of_month, notification_days_before')
+        .eq('user_id', user?.id)
         .maybeSingle();
 
       if (settingsError && settingsError.code !== 'PGRST116') throw settingsError;
       
       if (settingsData) {
-        setSettings(settingsData);
+        setSettings({
+          due_day_of_month: settingsData.due_day_of_month,
+          grace_period_days: settingsData.notification_days_before || 5,
+          late_fee_amount: 0
+        });
       } else {
         // Default settings
         setSettings({

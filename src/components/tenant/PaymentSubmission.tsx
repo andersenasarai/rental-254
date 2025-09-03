@@ -61,9 +61,9 @@ export const PaymentSubmission = () => {
       // Get active lease for the tenant
       const { data: lease, error: leaseError } = await supabase
         .from("leases")
-        .select("id, landlord_id")
+        .select("id, property_id")
         .eq("tenant_id", profile.id)
-        .eq("is_active", true) // Assuming 'is_active' is the correct column for active leases
+        .eq("status", "active")
         .maybeSingle();
 
       if (leaseError) throw leaseError;
@@ -81,8 +81,6 @@ export const PaymentSubmission = () => {
         .from("payments")
         .insert({
           lease_id: lease.id,
-          tenant_id: profile.id, // Use the profile ID as tenant_id
-          landlord_id: lease.landlord_id, // Get landlord_id from the lease
           amount: parseFloat(values.amount),
           due_date: new Date().toISOString().split("T")[0], // Today's date
           status: "pending", // Landlord needs to confirm

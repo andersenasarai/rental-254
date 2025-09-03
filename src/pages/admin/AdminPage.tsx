@@ -29,7 +29,7 @@ const AdminPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <DashboardHeader title="Admin Portal" userType="admin" />
+      <DashboardHeader title="Admin Portal" userType="landlord" />
       <AdminDashboard />
     </div>
   );

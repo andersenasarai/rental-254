@@ -78,9 +78,9 @@ export default function TenantManagement() {
         (data || []).map(async (profile) => {
           const { data: leaseData, error: leaseError } = await supabase
             .from("leases")
-            .select("property_id, start_date, end_date, rent_amount, properties(address, city, state, zip_code, title)")
+            .select("property_id, start_date, end_date, monthly_rent, properties(address, city, state, zip_code, title)")
             .eq("tenant_id", profile.id)
-            .eq("is_active", true)
+            .eq("status", "active")
             .maybeSingle();
 
           if (leaseError) console.error("Error fetching lease for tenant:", leaseError);
@@ -95,7 +95,7 @@ export default function TenantManagement() {
             phone: profile.phone || undefined,
             property_address: property ? `${property.address}, ${property.city}, ${property.state} ${property.zip_code}` : undefined,
             unit_number: property?.title || undefined, // Assuming title might be used for unit number
-            monthly_rent: leaseData?.rent_amount || undefined,
+            monthly_rent: leaseData?.monthly_rent || undefined,
             lease_start_date: leaseData?.start_date || undefined,
             lease_end_date: leaseData?.end_date || undefined,
             status: "active", // Placeholder, needs actual status logic
@@ -498,10 +498,14 @@ export default function TenantManagement() {
               Upload an Excel file (.xlsx) with tenant data.
             </DialogDescription>
           </DialogHeader>
-          <ExcelImport onSuccess={() => {
-            setExcelImportOpen(false);
-            fetchTenants();
-          }} />
+          <ExcelImport
+            open={excelImportOpen}
+            onOpenChange={setExcelImportOpen}
+            onImportComplete={() => {
+              fetchTenants();
+              setExcelImportOpen(false);
+            }}
+          />
         </DialogContent>
       </Dialog>
     </div>
