@@ -21,6 +21,7 @@ export function EnhancedAuth() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('tenant');
   const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [showTenantSignup, setShowTenantSignup] = useState(false);
   const [formData, setFormData] = useState<AuthFormData>({
     email: '',
     password: '',
@@ -81,6 +82,55 @@ export function EnhancedAuth() {
       toast({
         title: "Error",
         description: error.message || "Signup failed",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTenantLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      cleanupAuthState();
+      
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (error) throw error;
+
+      // Check if user has tenant role in profiles table
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role, id')
+        .eq('user_id', data.user.id)
+        .single();
+
+      if (profileError || !profile || profile.role !== 'tenant') {
+        await supabase.auth.signOut();
+        throw new Error('Invalid tenant credentials or access not authorized');
+      }
+
+      toast({
+        title: "Success",
+        description: "Logged in successfully",
+      });
+
+      window.location.href = '/tenant';
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Login failed",
         variant: "destructive",
       });
     } finally {
@@ -311,9 +361,13 @@ export function EnhancedAuth() {
             <TabsContent value="tenant" className="space-y-4">
               <div className="text-center py-2">
                 <h3 className="font-semibold">Tenant Portal</h3>
-                <p className="text-sm text-muted-foreground">Sign up with your Gmail account</p>
+                <p className="text-sm text-muted-foreground">
+                  {showTenantSignup ? 'Sign up with your Gmail account' : 'Sign in to your account'}
+                </p>
               </div>
-              <form onSubmit={handleTenantSignup} className="space-y-4">
+              
+              {showTenantSignup ? (
+                <form onSubmit={handleTenantSignup} className="space-y-4">
                 <div>
                   <Label htmlFor="tenant-name">Full Name</Label>
                   <Input
@@ -366,15 +420,78 @@ export function EnhancedAuth() {
                     'Sign Up as Tenant'
                   )}
                 </Button>
-                <Button
-                  type="button"
-                  variant="link"
-                  className="w-full"
-                  onClick={() => setShowPasswordReset(true)}
-                >
-                  Forgot password?
-                </Button>
-              </form>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="flex-1"
+                    onClick={() => setShowPasswordReset(true)}
+                  >
+                    Forgot password?
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="flex-1"
+                    onClick={() => setShowTenantSignup(false)}
+                  >
+                    Already have account? Sign In
+                  </Button>
+                </div>
+                </form>
+              ) : (
+                <form onSubmit={handleTenantLogin} className="space-y-4">
+                  <div>
+                    <Label htmlFor="tenant-login-email">Email</Label>
+                    <Input
+                      id="tenant-login-email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="your.email@gmail.com"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="tenant-login-password">Password</Label>
+                    <Input
+                      id="tenant-login-password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Signing in...
+                      </>
+                    ) : (
+                      'Sign In as Tenant'
+                    )}
+                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="flex-1"
+                      onClick={() => setShowPasswordReset(true)}
+                    >
+                      Forgot password?
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="flex-1"
+                      onClick={() => setShowTenantSignup(true)}
+                    >
+                      New user? Sign Up
+                    </Button>
+                  </div>
+                </form>
+              )}
             </TabsContent>
 
             <TabsContent value="landlord" className="space-y-4">
