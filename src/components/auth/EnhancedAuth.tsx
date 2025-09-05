@@ -241,38 +241,59 @@ export function EnhancedAuth() {
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.email) {
+      toast({
+        title: "Error",
+        description: "Please enter your email address",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
-
     try {
-      if (activeTab === 'tenant') {
-        // Call tenant password reset function
-        const { data, error } = await supabase.functions.invoke('tenant-password-reset', {
-          body: { email: formData.email }
-        });
-
-        if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "Password reset link sent to your email",
-        });
-      } else if (activeTab === 'landlord') {
-        // Call landlord password reset function
-        const { data, error } = await supabase.functions.invoke('landlord-password-reset', {
-          body: { email: formData.email }
-        });
-
-        if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "Password reset request submitted for admin approval",
-        });
+      let functionName = '';
+      let successMessage = '';
+      
+      switch (activeTab) {
+        case 'tenant':
+          functionName = 'tenant-password-reset';
+          successMessage = 'Password reset link sent to your email';
+          break;
+        case 'landlord':
+          functionName = 'landlord-password-reset';
+          successMessage = 'Password reset request submitted for admin approval';
+          break;
+        case 'admin':
+          functionName = 'admin-password-reset';
+          successMessage = 'Password reset link sent to your email';
+          break;
+        default:
+          throw new Error('Invalid user type');
       }
+
+      console.log(`Calling ${functionName} for email:`, formData.email);
+
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: { email: formData.email }
+      });
+
+      if (error) {
+        console.error(`Error calling ${functionName}:`, error);
+        throw error;
+      }
+
+      console.log(`${functionName} response:`, data);
+
+      toast({
+        title: "Success",
+        description: successMessage,
+      });
 
       setShowPasswordReset(false);
       setFormData({ email: '', password: '' });
     } catch (error: any) {
+      console.error('Password reset error:', error);
       toast({
         title: "Error",
         description: error.message || "Password reset failed",
