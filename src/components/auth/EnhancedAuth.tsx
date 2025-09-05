@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Mail, User, Building, Shield, ArrowLeft } from 'lucide-react';
+import { Loader2, Mail, User, Building, Shield, ArrowLeft, RotateCcw } from 'lucide-react';
+import { AccountMigration } from './AccountMigration';
 
 interface AuthFormData {
   email: string;
@@ -22,6 +23,7 @@ export function EnhancedAuth() {
   const [activeTab, setActiveTab] = useState('tenant');
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [showTenantSignup, setShowTenantSignup] = useState(false);
+  const [showAccountMigration, setShowAccountMigration] = useState(false);
   const [formData, setFormData] = useState<AuthFormData>({
     email: '',
     password: '',
@@ -281,6 +283,10 @@ export function EnhancedAuth() {
     }
   };
 
+  if (showAccountMigration) {
+    return <AccountMigration onBack={() => setShowAccountMigration(false)} />;
+  }
+
   if (showPasswordReset) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted">
@@ -342,6 +348,17 @@ export function EnhancedAuth() {
           <CardDescription>Access your rental management portal</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-4 text-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAccountMigration(true)}
+              className="text-xs"
+            >
+              <RotateCcw className="h-3 w-3 mr-1" />
+              Existing User? Migrate Account
+            </Button>
+          </div>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="tenant" className="flex items-center gap-1">
