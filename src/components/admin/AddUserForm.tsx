@@ -188,7 +188,7 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
           required
         />
         <p className="text-xs text-muted-foreground mt-1">
-          Gmail address for login authentication. Login ID is for reference only.
+          Gmail address for system communications and password reset.
         </p>
       </div>
 

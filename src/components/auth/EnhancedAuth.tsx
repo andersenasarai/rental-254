@@ -10,7 +10,7 @@ import { Loader2, Mail, User, Building, Shield, ArrowLeft, RotateCcw } from 'luc
 import { AccountMigration } from './AccountMigration';
 
 interface AuthFormData {
-  email: string;
+  email?: string;
   password: string;
   confirmPassword?: string;
   fullName?: string;
@@ -22,7 +22,6 @@ export function EnhancedAuth() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('tenant');
   const [showPasswordReset, setShowPasswordReset] = useState(false);
-  const [showTenantSignup, setShowTenantSignup] = useState(false);
   const [showAccountMigration, setShowAccountMigration] = useState(false);
   const [formData, setFormData] = useState<AuthFormData>({
     email: '',
@@ -45,52 +44,6 @@ export function EnhancedAuth() {
     });
   };
 
-  const handleTenantSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords don't match",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      cleanupAuthState();
-      
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password!,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth`,
-          data: {
-            full_name: formData.fullName,
-            role: 'tenant'
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Please check your email to confirm your account",
-      });
-
-      setFormData({ email: '', password: '', confirmPassword: '', fullName: '' });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Signup failed",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleTenantLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -104,24 +57,25 @@ export function EnhancedAuth() {
         // Continue even if this fails
       }
 
+      // Find user by login_id
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id, email, role')
+        .eq('login_id', formData.loginId)
+        .eq('role', 'tenant')
+        .single();
+
+      if (profileError || !profile) {
+        throw new Error('Invalid tenant login ID');
+      }
+
+      // Now sign in with email and password
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
+        email: profile.email,
         password: formData.password
       });
 
       if (error) throw error;
-
-      // Check if user has tenant role in profiles table
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role, id')
-        .eq('user_id', data.user.id)
-        .single();
-
-      if (profileError || !profile || profile.role !== 'tenant') {
-        await supabase.auth.signOut();
-        throw new Error('Invalid tenant credentials or access not authorized');
-      }
 
       toast({
         title: "Success",
@@ -147,31 +101,31 @@ export function EnhancedAuth() {
     try {
       cleanupAuthState();
       
-      // First try to sign out any existing session
       try {
         await supabase.auth.signOut({ scope: 'global' });
       } catch (err) {
         // Continue even if this fails
       }
 
+      // Find user by login_id
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id, email, role')
+        .eq('login_id', formData.loginId)
+        .eq('role', 'landlord')
+        .single();
+
+      if (profileError || !profile) {
+        throw new Error('Invalid landlord login ID');
+      }
+
+      // Now sign in with email and password
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
+        email: profile.email,
         password: formData.password
       });
 
       if (error) throw error;
-
-      // Check if user has landlord role in profiles table
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role, id')
-        .eq('user_id', data.user.id)
-        .single();
-
-      if (profileError || !profile || profile.role !== 'landlord') {
-        await supabase.auth.signOut();
-        throw new Error('Invalid landlord credentials');
-      }
 
       toast({
         title: "Success",
@@ -204,7 +158,7 @@ export function EnhancedAuth() {
       }
 
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
+        email: formData.email!,
         password: formData.password
       });
 
@@ -241,7 +195,7 @@ export function EnhancedAuth() {
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.email) {
+    if (!formData.email && activeTab !== 'tenant' && activeTab !== 'landlord') {
       toast({
         title: "Error",
         description: "Please enter your email address",
@@ -272,18 +226,13 @@ export function EnhancedAuth() {
           throw new Error('Invalid user type');
       }
 
-      console.log(`Calling ${functionName} for email:`, formData.email);
-
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: { email: formData.email }
       });
 
       if (error) {
-        console.error(`Error calling ${functionName}:`, error);
         throw error;
       }
-
-      console.log(`${functionName} response:`, data);
 
       toast({
         title: "Success",
@@ -293,7 +242,6 @@ export function EnhancedAuth() {
       setShowPasswordReset(false);
       setFormData({ email: '', password: '' });
     } catch (error: any) {
-      console.error('Password reset error:', error);
       toast({
         title: "Error",
         description: error.message || "Password reset failed",
@@ -326,10 +274,7 @@ export function EnhancedAuth() {
               Reset Password
             </CardTitle>
             <CardDescription>
-              {activeTab === 'tenant' 
-                ? 'Enter your email to receive a password reset link'
-                : 'Enter your email to request password reset (requires admin approval)'
-              }
+              Enter your email to receive a password reset link
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -400,51 +345,29 @@ export function EnhancedAuth() {
               <div className="text-center py-2">
                 <h3 className="font-semibold">Tenant Portal</h3>
                 <p className="text-sm text-muted-foreground">
-                  {showTenantSignup ? 'Sign up with your Gmail account' : 'Sign in to your account'}
+                  Enter your credentials provided by the admin
                 </p>
               </div>
               
-              {showTenantSignup ? (
-                <form onSubmit={handleTenantSignup} className="space-y-4">
+              <form onSubmit={handleTenantLogin} className="space-y-4">
                 <div>
-                  <Label htmlFor="tenant-name">Full Name</Label>
+                  <Label htmlFor="tenant-login-id">Login ID</Label>
                   <Input
-                    id="tenant-name"
+                    id="tenant-login-id"
                     type="text"
-                    value={formData.fullName || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                    placeholder="Enter your full name"
+                    value={formData.loginId || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, loginId: e.target.value }))}
+                    placeholder="TN-000001"
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="tenant-email">Email (Gmail preferred)</Label>
+                  <Label htmlFor="tenant-login-password">Password</Label>
                   <Input
-                    id="tenant-email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="your.email@gmail.com"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="tenant-password">Password</Label>
-                  <Input
-                    id="tenant-password"
+                    id="tenant-login-password"
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="tenant-confirm">Confirm Password</Label>
-                  <Input
-                    id="tenant-confirm"
-                    type="password"
-                    value={formData.confirmPassword || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                     required
                   />
                 </div>
@@ -452,100 +375,32 @@ export function EnhancedAuth() {
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating Account...
+                      Signing in...
                     </>
                   ) : (
-                    'Sign Up as Tenant'
+                    'Sign In as Tenant'
                   )}
                 </Button>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="flex-1"
-                    onClick={() => setShowPasswordReset(true)}
-                  >
-                    Forgot password?
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="flex-1"
-                    onClick={() => setShowTenantSignup(false)}
-                  >
-                    Already have account? Sign In
-                  </Button>
-                </div>
-                </form>
-              ) : (
-                <form onSubmit={handleTenantLogin} className="space-y-4">
-                  <div>
-                    <Label htmlFor="tenant-login-email">Email</Label>
-                    <Input
-                      id="tenant-login-email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="your.email@gmail.com"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="tenant-login-password">Password</Label>
-                    <Input
-                      id="tenant-login-password"
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Signing in...
-                      </>
-                    ) : (
-                      'Sign In as Tenant'
-                    )}
-                  </Button>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="link"
-                      className="flex-1"
-                      onClick={() => setShowPasswordReset(true)}
-                    >
-                      Forgot password?
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="link"
-                      className="flex-1"
-                      onClick={() => setShowTenantSignup(true)}
-                    >
-                      New user? Sign Up
-                    </Button>
-                  </div>
-                </form>
-              )}
+              </form>
             </TabsContent>
 
             <TabsContent value="landlord" className="space-y-4">
               <div className="text-center py-2">
                 <h3 className="font-semibold">Landlord Portal</h3>
-                <p className="text-sm text-muted-foreground">Use Gmail credentials provided by admin</p>
+                <p className="text-sm text-muted-foreground">
+                  Enter your credentials provided by the admin
+                </p>
               </div>
+              
               <form onSubmit={handleLandlordLogin} className="space-y-4">
                 <div>
-                  <Label htmlFor="landlord-email">Gmail Address</Label>
+                  <Label htmlFor="landlord-login-id">Login ID</Label>
                   <Input
-                    id="landlord-email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="Gmail provided by admin"
+                    id="landlord-login-id"
+                    type="text"
+                    value={formData.loginId || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, loginId: e.target.value }))}
+                    placeholder="LL-000001"
                     required
                   />
                 </div>
@@ -556,7 +411,6 @@ export function EnhancedAuth() {
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    placeholder="Password provided by admin"
                     required
                   />
                 </div>
@@ -569,14 +423,6 @@ export function EnhancedAuth() {
                   ) : (
                     'Sign In as Landlord'
                   )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="link"
-                  className="w-full"
-                  onClick={() => setShowPasswordReset(true)}
-                >
-                  Forgot password?
                 </Button>
               </form>
             </TabsContent>
@@ -616,6 +462,14 @@ export function EnhancedAuth() {
                   ) : (
                     'Sign In as Admin'
                   )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="link"
+                  className="w-full"
+                  onClick={() => setShowPasswordReset(true)}
+                >
+                  Forgot password?
                 </Button>
               </form>
               <div className="mt-4 p-3 bg-muted rounded text-sm">
