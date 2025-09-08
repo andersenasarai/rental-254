@@ -472,9 +472,6 @@ export function EnhancedAuth() {
                   Forgot password?
                 </Button>
               </form>
-              <div className="mt-4 p-3 bg-muted rounded text-sm">
-                <p><strong>Admin:</strong> asaraimakokha1@gmail.com / admin123</p>
-              </div>
             </TabsContent>
           </Tabs>
         </CardContent>

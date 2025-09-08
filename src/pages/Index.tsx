@@ -69,7 +69,6 @@ const Index = () => {
           </div>
           <div className="flex items-center space-x-4">
             <Button variant="ghost">Features</Button>
-            <Button variant="ghost">Pricing</Button>
             <Button variant="outline" onClick={() => window.location.href = '/auth'}>Sign In</Button>
             <Button onClick={() => window.location.href = '/auth'}>Get Started</Button>
             <Button variant="ghost" onClick={() => window.location.href = '/auth'}>Admin</Button>
@@ -221,7 +220,7 @@ const Index = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="secondary" onClick={() => window.location.href = '/auth'}>
-              Start Free Trial
+              Get Started
             </Button>
             <Button size="lg" variant="outline" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
               Schedule Demo
@@ -247,7 +246,6 @@ const Index = () => {
               <h3 className="font-semibold mb-4">Product</h3>
               <ul className="space-y-2 text-muted-foreground">
                 <li>Features</li>
-                <li>Pricing</li>
                 <li>Security</li>
                 <li>Integrations</li>
               </ul>
