@@ -14,6 +14,23 @@ interface ApprovalRequest {
   token: string;
 }
 
+// Input validation functions
+function validateUUID(uuid: any): boolean {
+  if (typeof uuid !== 'string') return false;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+
+function validateAction(action: any): boolean {
+  return typeof action === 'string' && (action === 'approve' || action === 'reject');
+}
+
+function validateToken(token: any): boolean {
+  if (typeof token !== 'string') return false;
+  // Token should be a hex string
+  return /^[0-9a-f]+$/i.test(token) && token.length > 0;
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -26,13 +43,74 @@ const handler = async (req: Request): Promise<Response> => {
     const action = url.searchParams.get('action') as 'approve' | 'reject';
     const user_id = url.searchParams.get('user_id');
 
+    console.log('Approval request received:', { action, user_id: user_id?.slice(0, 8) });
+
+    // Validate required parameters
     if (!token || !action || !user_id) {
+      console.error('Missing required parameters');
       return new Response(
         `
         <html>
           <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px;">
             <h1 style="color: #dc2626;">Invalid Request</h1>
             <p>Missing required parameters. Please use the link from your email.</p>
+          </body>
+        </html>
+        `,
+        {
+          status: 400,
+          headers: { "Content-Type": "text/html", ...corsHeaders },
+        }
+      );
+    }
+
+    // Validate user_id format
+    if (!validateUUID(user_id)) {
+      console.error('Invalid user_id format:', user_id);
+      return new Response(
+        `
+        <html>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px;">
+            <h1 style="color: #dc2626;">Invalid Request</h1>
+            <p>Invalid user ID format.</p>
+          </body>
+        </html>
+        `,
+        {
+          status: 400,
+          headers: { "Content-Type": "text/html", ...corsHeaders },
+        }
+      );
+    }
+
+    // Validate action value
+    if (!validateAction(action)) {
+      console.error('Invalid action:', action);
+      return new Response(
+        `
+        <html>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px;">
+            <h1 style="color: #dc2626;">Invalid Request</h1>
+            <p>Invalid action. Must be 'approve' or 'reject'.</p>
+          </body>
+        </html>
+        `,
+        {
+          status: 400,
+          headers: { "Content-Type": "text/html", ...corsHeaders },
+        }
+      );
+    }
+
+    // Validate token format
+    if (!validateToken(token)) {
+      console.error('Invalid token format');
+      return new Response(
+        `
+        <html>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px;">
+            <h1 style="color: #dc2626;">Invalid Request</h1>
+            <p>Invalid token format.</p>
           </body>
         </html>
         `,

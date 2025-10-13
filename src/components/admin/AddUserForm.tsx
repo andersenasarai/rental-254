@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { PasswordStrengthMeter, validatePasswordStrength } from '@/components/ui/password-strength-meter';
 
 interface AddUserFormProps {
   onSuccess: () => void;
@@ -42,9 +43,21 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
     setLoading(true);
 
     try {
-      // Validate Gmail address
-      if (!formData.email.includes('@gmail.com') && !formData.email.includes('@')) {
-        throw new Error('Please provide a valid Gmail address');
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        throw new Error('Please provide a valid email address');
+      }
+
+      // Validate password strength
+      const passwordValidation = validatePasswordStrength(formData.password);
+      if (!passwordValidation.isValid) {
+        throw new Error(passwordValidation.message);
+      }
+
+      // Validate phone format if provided
+      if (formData.phone && !/^\+?[0-9]{10,15}$/.test(formData.phone.replace(/[\s\-()]/g, ''))) {
+        throw new Error('Please provide a valid phone number (10-15 digits)');
       }
 
       // Check if login_id already exists
@@ -178,17 +191,17 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
       </div>
 
       <div>
-        <Label htmlFor="email">Gmail Address *</Label>
+        <Label htmlFor="email">Email Address *</Label>
         <Input
           id="email"
           type="email"
           value={formData.email}
           onChange={(e) => handleInputChange('email', e.target.value)}
-          placeholder="user@gmail.com"
+          placeholder="user@example.com"
           required
         />
         <p className="text-xs text-muted-foreground mt-1">
-          Gmail address for system communications and password reset.
+          Email address for system communications and password reset.
         </p>
       </div>
 
@@ -196,9 +209,14 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
         <Label htmlFor="phone">Phone</Label>
         <Input
           id="phone"
+          type="tel"
           value={formData.phone}
           onChange={(e) => handleInputChange('phone', e.target.value)}
+          placeholder="+254712345678"
         />
+        <p className="text-xs text-muted-foreground mt-1">
+          Optional. Format: +254712345678 or 0712345678
+        </p>
       </div>
 
       <div>
@@ -209,11 +227,9 @@ export default function AddUserForm({ onSuccess }: AddUserFormProps) {
           value={formData.password}
           onChange={(e) => handleInputChange('password', e.target.value)}
           required
-          minLength={6}
+          minLength={12}
         />
-        <p className="text-xs text-muted-foreground mt-1">
-          Minimum 6 characters
-        </p>
+        <PasswordStrengthMeter password={formData.password} />
       </div>
 
       <DialogFooter>
