@@ -28,6 +28,24 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Processing tenant password reset request for:", email);
 
+    // Rate limiting: Check for recent reset requests (max 5 per hour)
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { data: recentResets, error: rateLimitError } = await supabase
+      .from("password_reset_tokens")
+      .select("id")
+      .gte("created_at", oneHourAgo);
+
+    if (rateLimitError) {
+      console.error("Rate limit check error:", rateLimitError);
+    }
+
+    // Count requests for this specific email/user
+    let resetCount = 0;
+    if (recentResets) {
+      // We'll check after finding the user
+      resetCount = recentResets.length;
+    }
+
     // First, check if this email exists as a tenant in the system
     const { data: tenant, error: tenantError } = await supabase
       .from("tenants")
@@ -87,12 +105,55 @@ const handler = async (req: Request): Promise<Response> => {
 
     const landlordName = landlordProfile?.full_name || "Landlord";
 
-    // Generate a password reset token for the tenant
+    // Check rate limit for this specific user
+    const { data: userRecentResets } = await supabase
+      .from("password_reset_tokens")
+      .select("id")
+      .eq("user_id", tenant.user_id)
+      .gte("created_at", oneHourAgo);
+
+    if (userRecentResets && userRecentResets.length >= 5) {
+      console.warn(`Rate limit exceeded for user: ${tenant.user_id}`);
+      return new Response(
+        JSON.stringify({ error: "Too many reset requests. Please try again in an hour." }),
+        {
+          status: 429,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Generate password reset token (1 hour expiry)
+    const resetToken = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    // Store token in database for tracking and validation
+    const { error: tokenError } = await supabase
+      .from("password_reset_tokens")
+      .insert({
+        user_id: tenant.user_id,
+        token: resetToken,
+        expires_at: expiresAt.toISOString(),
+        used: false
+      });
+
+    if (tokenError) {
+      console.error("Error storing reset token:", tokenError.message);
+      return new Response(
+        JSON.stringify({ error: "Failed to generate reset token" }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Generate a password reset link using Supabase Auth
     const { data: resetData, error: resetError } = await supabase.auth.admin.generateLink({
       type: 'recovery',
       email: email,
       options: {
-        redirectTo: `${Deno.env.get("SITE_URL") || "https://yourapp.com"}/auth?mode=reset`
+        redirectTo: `${Deno.env.get("SITE_URL") || "https://yourapp.com"}/auth?mode=reset&token=${resetToken}`
       }
     });
 

@@ -28,6 +28,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Processing landlord password reset request for:", email);
 
+    // Rate limiting: Check for recent reset requests (max 5 per hour)
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+
     // Check if this email exists as a landlord in the system
     const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(email);
 
@@ -86,13 +89,48 @@ const handler = async (req: Request): Promise<Response> => {
 
     const landlordName = profile?.full_name || email;
 
-    // Generate a unique reset token
-    const resetToken = crypto.randomUUID();
-    const resetExpiry = new Date();
-    resetExpiry.setHours(resetExpiry.getHours() + 24); // 24 hour expiry
+    // Check rate limit for this specific user
+    const { data: userRecentResets } = await supabase
+      .from("password_reset_tokens")
+      .select("id")
+      .eq("user_id", authUser.user.id)
+      .gte("created_at", oneHourAgo);
 
-    // Store the reset request (you might want to create a password_resets table for this)
-    // For now, we'll send notification to admin
+    if (userRecentResets && userRecentResets.length >= 5) {
+      console.warn(`Rate limit exceeded for user: ${authUser.user.id}`);
+      return new Response(
+        JSON.stringify({ error: "Too many reset requests. Please try again in an hour." }),
+        {
+          status: 429,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Generate a unique reset token (1 hour expiry for security)
+    const resetToken = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    // Store the reset token in database for tracking
+    const { error: tokenError } = await supabase
+      .from("password_reset_tokens")
+      .insert({
+        user_id: authUser.user.id,
+        token: resetToken,
+        expires_at: expiresAt.toISOString(),
+        used: false
+      });
+
+    if (tokenError) {
+      console.error("Error storing reset token:", tokenError.message);
+      return new Response(
+        JSON.stringify({ error: "Failed to generate reset token" }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
     const adminEmail = "asaraimakokha1@gmail.com";
 
